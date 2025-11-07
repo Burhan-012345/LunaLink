@@ -1,0 +1,816 @@
+{% extends "base.html" %} {% block title %}Media Gallery - LunaLink{% endblock
+%} {% block extra_css %}
+<style>
+  .media-gallery-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .gallery-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-primary);
+  }
+
+  .gallery-title i {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+  }
+
+  .gallery-filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .filter-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .filter-btn.active,
+  .filter-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-box input {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    color: var(--text-primary);
+    width: 250px;
+  }
+
+  .search-box i {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-secondary);
+  }
+
+  .media-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 15px;
+    text-align: center;
+    border-left: 4px solid var(--primary-color);
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .media-item {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    aspect-ratio: 1;
+    background: var(--bg-secondary);
+  }
+
+  .media-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .media-content {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .media-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.8));
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .media-item:hover .media-overlay {
+    opacity: 1;
+  }
+
+  .media-info {
+    color: white;
+  }
+
+  .media-sender {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .media-date {
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+
+  .media-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .media-item:hover .media-actions {
+    opacity: 1;
+  }
+
+  .action-btn {
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .action-btn:hover {
+    background: var(--primary-color);
+  }
+
+  .media-type-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+  }
+
+  .audio-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    color: var(--text-secondary);
+  }
+
+  .audio-item i {
+    font-size: 2rem;
+    color: var(--primary-color);
+  }
+
+  .load-more {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+  }
+
+  .empty-state h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+
+  /* Lightbox Modal */
+  .lightbox-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+  }
+
+  .lightbox-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    max-height: 90%;
+  }
+
+  .lightbox-media {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 10px;
+  }
+
+  .lightbox-audio {
+    background: var(--bg-primary);
+    padding: 2rem;
+    border-radius: 15px;
+    min-width: 300px;
+  }
+
+  .lightbox-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 1.5rem;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2001;
+  }
+
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox-prev {
+    left: 1rem;
+  }
+
+  .lightbox-next {
+    right: 1rem;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .media-gallery-container {
+      padding: 1rem;
+    }
+
+    .gallery-header {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .gallery-filters {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .search-box {
+      width: 100%;
+    }
+
+    .search-box input {
+      width: 100%;
+    }
+
+    .media-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .lightbox-content {
+      max-width: 95%;
+    }
+
+    .lightbox-nav {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .media-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .media-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="media-gallery-container">
+  <div class="gallery-header">
+    <div class="gallery-title">
+      <i class="fas fa-images"></i>
+      <h1>Media Gallery</h1>
+    </div>
+
+    <div class="gallery-filters">
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="all">All Media</button>
+        <button class="filter-btn" data-filter="image">Images</button>
+        <button class="filter-btn" data-filter="video">Videos</button>
+        <button class="filter-btn" data-filter="audio">Audio</button>
+      </div>
+
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="mediaSearch" placeholder="Search media..." />
+      </div>
+    </div>
+  </div>
+
+  <div class="media-stats">
+    <div class="stat-card">
+      <div class="stat-number" id="totalMedia">0</div>
+      <div class="stat-label">Total Media</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="imageCount">0</div>
+      <div class="stat-label">Images</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="videoCount">0</div>
+      <div class="stat-label">Videos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="audioCount">0</div>
+      <div class="stat-label">Voice Notes</div>
+    </div>
+  </div>
+
+  <div class="media-grid" id="mediaGrid">
+    <!-- Media items will be loaded here via JavaScript -->
+    <div class="loading-media">
+      <div class="loader"></div>
+      <p>Loading your memories...</p>
+    </div>
+  </div>
+
+  <div class="load-more">
+    <button class="btn btn-primary" id="loadMoreBtn" style="display: none">
+      <i class="fas fa-plus"></i> Load More
+    </button>
+  </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div class="lightbox-modal" id="lightboxModal">
+  <button class="lightbox-close" onclick="closeLightbox()">
+    <i class="fas fa-times"></i>
+  </button>
+
+  <button class="lightbox-nav lightbox-prev" onclick="navigateMedia(-1)">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+
+  <button class="lightbox-nav lightbox-next" onclick="navigateMedia(1)">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+
+  <div class="lightbox-content" id="lightboxContent">
+    <!-- Lightbox content will be loaded here -->
+  </div>
+
+  <div class="lightbox-info" id="lightboxInfo">
+    <!-- Media info will be loaded here -->
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allMedia = [];
+  let filteredMedia = [];
+  let currentFilter = "all";
+  let currentPage = 1;
+  let hasMore = true;
+  let currentMediaIndex = 0;
+
+  // Initialize media gallery
+  document.addEventListener("DOMContentLoaded", function () {
+    loadMedia();
+    setupEventListeners();
+  });
+
+  function loadMedia() {
+    fetch("/chat/media")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.media && data.media.length > 0) {
+          allMedia = data.media;
+          updateStats();
+          filterMedia();
+        } else {
+          showEmptyState();
+        }
+      })
+      .catch((error) => {
+        console.error("Error loading media:", error);
+        showErrorState();
+      });
+  }
+
+  function setupEventListeners() {
+    // Filter buttons
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+        currentFilter = this.dataset.filter;
+        filterMedia();
+      });
+    });
+
+    // Search functionality
+    document
+      .getElementById("mediaSearch")
+      .addEventListener("input", function (e) {
+        filterMedia();
+      });
+
+    // Load more button
+    document
+      .getElementById("loadMoreBtn")
+      .addEventListener("click", loadMoreMedia);
+
+    // Close lightbox on ESC key
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowLeft") {
+        navigateMedia(-1);
+      } else if (e.key === "ArrowRight") {
+        navigateMedia(1);
+      }
+    });
+  }
+
+  function updateStats() {
+    const total = allMedia.length;
+    const images = allMedia.filter((m) =>
+      m.file_type.startsWith("image/")
+    ).length;
+    const videos = allMedia.filter((m) =>
+      m.file_type.startsWith("video/")
+    ).length;
+    const audio = allMedia.filter((m) =>
+      m.file_type.startsWith("audio/")
+    ).length;
+
+    document.getElementById("totalMedia").textContent = total;
+    document.getElementById("imageCount").textContent = images;
+    document.getElementById("videoCount").textContent = videos;
+    document.getElementById("audioCount").textContent = audio;
+  }
+
+  function filterMedia() {
+    const searchTerm = document
+      .getElementById("mediaSearch")
+      .value.toLowerCase();
+
+    filteredMedia = allMedia.filter((media) => {
+      // Apply type filter
+      if (currentFilter !== "all") {
+        if (currentFilter === "image" && !media.file_type.startsWith("image/"))
+          return false;
+        if (currentFilter === "video" && !media.file_type.startsWith("video/"))
+          return false;
+        if (currentFilter === "audio" && !media.file_type.startsWith("audio/"))
+          return false;
+      }
+
+      // Apply search filter
+      if (searchTerm) {
+        const senderName = media.sender_name.toLowerCase();
+        return senderName.includes(searchTerm);
+      }
+
+      return true;
+    });
+
+    renderMediaGrid();
+  }
+
+  function renderMediaGrid() {
+    const grid = document.getElementById("mediaGrid");
+    grid.innerHTML = "";
+
+    if (filteredMedia.length === 0) {
+      showEmptyState();
+      return;
+    }
+
+    filteredMedia.forEach((media, index) => {
+      const mediaItem = createMediaItem(media, index);
+      grid.appendChild(mediaItem);
+    });
+
+    // Show/hide load more button
+    document.getElementById("loadMoreBtn").style.display = hasMore
+      ? "block"
+      : "none";
+  }
+
+  function createMediaItem(media, index) {
+    const item = document.createElement("div");
+    item.className = "media-item";
+    item.onclick = () => openLightbox(index);
+
+    let mediaContent = "";
+    let typeBadge = "";
+
+    if (media.file_type.startsWith("image/")) {
+      mediaContent = `<img src="${
+        media.thumbnail_path || media.file_path
+      }" alt="Shared image" class="media-content">`;
+      typeBadge =
+        '<div class="media-type-badge"><i class="fas fa-image"></i></div>';
+    } else if (media.file_type.startsWith("video/")) {
+      mediaContent = `
+            <video class="media-content">
+                <source src="${media.file_path}" type="${media.file_type}">
+            </video>
+            <div class="media-play-overlay">
+                <i class="fas fa-play"></i>
+            </div>
+        `;
+      typeBadge =
+        '<div class="media-type-badge"><i class="fas fa-video"></i></div>';
+    } else if (media.file_type.startsWith("audio/")) {
+      mediaContent = `
+            <div class="audio-item">
+                <i class="fas fa-music"></i>
+                <span>Voice Message</span>
+            </div>
+        `;
+      typeBadge =
+        '<div class="media-type-badge"><i class="fas fa-microphone"></i></div>';
+    }
+
+    const date = new Date(media.timestamp).toLocaleDateString();
+
+    item.innerHTML = `
+        ${mediaContent}
+        ${typeBadge}
+        <div class="media-overlay">
+            <div class="media-info">
+                <div class="media-sender">${media.sender_name}</div>
+                <div class="media-date">${date}</div>
+            </div>
+        </div>
+        <div class="media-actions">
+            <button class="action-btn" onclick="event.stopPropagation(); downloadMedia(${media.id})" title="Download">
+                <i class="fas fa-download"></i>
+            </button>
+            <button class="action-btn" onclick="event.stopPropagation(); shareMedia(${media.id})" title="Share">
+                <i class="fas fa-share"></i>
+            </button>
+        </div>
+    `;
+
+    return item;
+  }
+
+  function openLightbox(index) {
+    currentMediaIndex = index;
+    const media = filteredMedia[index];
+
+    const modal = document.getElementById("lightboxModal");
+    const content = document.getElementById("lightboxContent");
+    const info = document.getElementById("lightboxInfo");
+
+    let mediaElement = "";
+
+    if (media.file_type.startsWith("image/")) {
+      mediaElement = `<img src="${media.file_path}" alt="Shared image" class="lightbox-media">`;
+    } else if (media.file_type.startsWith("video/")) {
+      mediaElement = `
+            <video controls autoplay class="lightbox-media">
+                <source src="${media.file_path}" type="${media.file_type}">
+                Your browser does not support the video tag.
+            </video>
+        `;
+    } else if (media.file_type.startsWith("audio/")) {
+      mediaElement = `
+            <div class="lightbox-audio">
+                <i class="fas fa-music" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <audio controls style="width: 100%;">
+                    <source src="${media.file_path}" type="${media.file_type}">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+        `;
+    }
+
+    const date = new Date(media.timestamp).toLocaleString();
+
+    content.innerHTML = mediaElement;
+    info.innerHTML = `
+        <div>
+            <strong>From:</strong> ${media.sender_name}<br>
+            <strong>Date:</strong> ${date}<br>
+            <strong>Type:</strong> ${media.file_type}
+        </div>
+    `;
+
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeLightbox() {
+    const modal = document.getElementById("lightboxModal");
+    modal.style.display = "none";
+    document.body.style.overflow = "auto";
+
+    // Pause any playing media
+    const video = modal.querySelector("video");
+    const audio = modal.querySelector("audio");
+    if (video) video.pause();
+    if (audio) audio.pause();
+  }
+
+  function navigateMedia(direction) {
+    currentMediaIndex += direction;
+
+    if (currentMediaIndex < 0) {
+      currentMediaIndex = filteredMedia.length - 1;
+    } else if (currentMediaIndex >= filteredMedia.length) {
+      currentMediaIndex = 0;
+    }
+
+    openLightbox(currentMediaIndex);
+  }
+
+  function downloadMedia(mediaId) {
+    window.open(`/chat/download/${mediaId}`, "_blank");
+  }
+
+  function shareMedia(mediaId) {
+    const media = allMedia.find((m) => m.id === mediaId);
+    if (navigator.share) {
+      navigator
+        .share({
+          title: "Check out this media from LunaLink",
+          url: media.file_path,
+        })
+        .catch((error) => {
+          console.log("Error sharing:", error);
+        });
+    } else {
+      // Fallback: copy to clipboard or show link
+      navigator.clipboard.writeText(media.file_path).then(() => {
+        showNotification("Media link copied to clipboard!", "success");
+      });
+    }
+  }
+
+  function loadMoreMedia() {
+    // Implement pagination if needed
+    currentPage++;
+    // In a real implementation, you'd fetch more media from the server
+  }
+
+  function showEmptyState() {
+    const grid = document.getElementById("mediaGrid");
+    grid.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-images"></i>
+            <h3>No Media Yet</h3>
+            <p>Start sharing images, videos, and voice notes with your partner to see them here!</p>
+            <button class="btn btn-primary" onclick="location.href='/chat'">
+                <i class="fas fa-comments"></i> Go to Chat
+            </button>
+        </div>
+    `;
+  }
+
+  function showErrorState() {
+    const grid = document.getElementById("mediaGrid");
+    grid.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Error Loading Media</h3>
+            <p>There was a problem loading your media. Please try again later.</p>
+            <button class="btn btn-primary" onclick="loadMedia()">
+                <i class="fas fa-redo"></i> Try Again
+            </button>
+        </div>
+    `;
+  }
+
+  function showNotification(message, type) {
+    // Use existing notification system or create a simple one
+    const notification = document.createElement("div");
+    notification.className = `flash-message ${type}`;
+    notification.innerHTML = `
+        ${message}
+        <span class="flash-close">&times;</span>
+    `;
+
+    const container =
+      document.querySelector(".flash-container") || createFlashContainer();
+    container.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
+
+    notification.querySelector(".flash-close").onclick = () => {
+      notification.remove();
+    };
+  }
+
+  function createFlashContainer() {
+    const container = document.createElement("div");
+    container.className = "flash-container";
+    document.body.appendChild(container);
+    return container;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %} {% block title %}Chat - LunaLink{% endblock %} {%
+block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/chat.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="chat-container">
+  <!-- Sidebar -->
+  <div class="chat-sidebar">
+    {% if partner %}
+    <div class="partner-info">
+      <img
+        src="{{ url_for('static', filename='images/avatars/' + partner.avatar) }}"
+        alt="{{ partner.name }}"
+        class="partner-avatar"
+      />
+      <div class="partner-details">
+        <h3>{{ partner.name }}</h3>
+        <p class="partner-status">
+          <span
+            class="status-dot {% if partner.last_seen and (utcnow - partner.last_seen).total_seconds() < 300 %}online{% else %}offline{% endif %}"
+          ></span>
+          {% if partner.last_seen and (utcnow -
+          partner.last_seen).total_seconds() < 300 %} Online {% else %} Last
+          seen {{ partner.last_seen.strftime('%H:%M') if partner.last_seen else
+          'Never' }} {% endif %}
+        </p>
+        {% if partner.status_message %}
+        <p class="status-message">"{{ partner.status_message }}"</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="sidebar-features">
+      <button class="feature-btn" onclick="showMediaGallery()">
+        <i class="fas fa-images"></i> Media Gallery
+      </button>
+      <button class="feature-btn" onclick="sendVirtualHug()">
+        <i class="fas fa-heart"></i> Send Hug
+      </button>
+      <button class="feature-btn" onclick="toggleBackgroundMusic()">
+        <i class="fas fa-music"></i> Background Music
+      </button>
+    </div>
+    {% else %}
+    <div class="no-partner">
+      <i class="fas fa-user-plus"></i>
+      <h3>No Partner Linked</h3>
+      <p>Connect with your partner to start chatting!</p>
+      <button class="btn btn-primary" onclick="invitePartner()">
+        Invite Partner
+      </button>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Main Chat Area -->
+  <div class="chat-main">
+    {% if partner %}
+    <!-- Messages Container -->
+    <div class="messages-container" id="messagesContainer">
+      <div class="messages-loading" id="messagesLoading">
+        <div class="loader"></div>
+      </div>
+      <!-- Messages will be loaded here via JavaScript -->
+    </div>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typingIndicator" style="display: none">
+      <div class="typing-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <span>{{ partner.name }} is typing...</span>
+    </div>
+
+    <!-- Message Input -->
+    <div class="message-input-container">
+      <div class="input-actions">
+        <button class="action-btn" onclick="toggleEmojiPicker()">
+          <i class="far fa-smile"></i>
+        </button>
+        <button
+          class="action-btn"
+          onclick="document.getElementById('fileInput').click()"
+        >
+          <i class="far fa-image"></i>
+        </button>
+        <button class="action-btn" onclick="startVoiceRecording()">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+
+      <div class="message-input-wrapper">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type your message here..."
+          onkeypress="handleKeyPress(event)"
+          oninput="handleTyping()"
+        />
+
+        <button class="send-btn" onclick="sendMessage()">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+
+      <!-- Hidden File Input -->
+      <input
+        type="file"
+        id="fileInput"
+        style="display: none"
+        onchange="handleFileUpload(this.files[0])"
+      />
+    </div>
+
+    <!-- Emoji Picker -->
+    <div class="emoji-picker" id="emojiPicker" style="display: none">
+      <div class="emoji-category">
+        <span>Smileys</span>
+        <div class="emoji-grid">
+          <span onclick="addEmoji('😊')">😊</span>
+          <span onclick="addEmoji('😍')">😍</span>
+          <span onclick="addEmoji('🥰')">🥰</span>
+          <span onclick="addEmoji('😘')">😘</span>
+          <span onclick="addEmoji('❤️')">❤️</span>
+          <span onclick="addEmoji('💕')">💕</span>
+          <span onclick="addEmoji('🌹')">🌹</span>
+          <span onclick="addEmoji('⭐')">⭐</span>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="no-chat-placeholder">
+      <div class="placeholder-content">
+        <i class="fas fa-comments"></i>
+        <h2>Welcome to LunaLink Chat</h2>
+        <p>Connect with your partner to start your private conversation</p>
+        <button class="btn btn-primary" onclick="invitePartner()">
+          <i class="fas fa-user-plus"></i> Invite Partner
+        </button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Media Gallery Modal -->
+<div class="modal" id="mediaGalleryModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Media Gallery</h3>
+      <button class="close-btn" onclick="closeMediaGallery()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="media-grid" id="mediaGrid">
+        <!-- Media items will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Background Music -->
+<audio id="backgroundMusic" loop style="display: none">
+  <source
+    src="{{ url_for('static', filename='sounds/romantic-music.mp3') }}"
+    type="audio/mpeg"
+  />
+</audio>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script>
+  const PARTNER_ID = "{{ partner.id if partner else '' }}";
+  const CURRENT_USER_ID = "{{ current_user.id }}";
+
+  // Initialize chat when page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    if (PARTNER_ID) {
+      initializeChat();
+      loadMessages();
+    }
+  });
+</script>
+{% endblock %}
