@@ -1,0 +1,382 @@
+{% extends "base.html" %} {% block title %}Verify OTP - LunaLink{% endblock %}
+{% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/auth.css') }}"
+/>
+<style>
+  .otp-container {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+  }
+
+  .otp-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .otp-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+  }
+
+  .otp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .otp-inputs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .otp-input {
+    width: 50px;
+    height: 60px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+  }
+
+  .otp-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 75, 110, 0.1);
+    outline: none;
+  }
+
+  .otp-input.filled {
+    border-color: var(--success-color);
+    background: rgba(76, 175, 80, 0.1);
+  }
+
+  .otp-timer {
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 1rem 0;
+  }
+
+  .otp-timer.expiring {
+    color: var(--error-color);
+    animation: pulse 1s infinite;
+  }
+
+  .resend-link {
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .resend-link a {
+    color: var(--primary-color);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .resend-link a:disabled {
+    color: var(--text-secondary);
+    cursor: not-allowed;
+  }
+
+  .otp-instructions {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="otp-container">
+      <div class="otp-header">
+        <div class="otp-icon">
+          <i class="fas fa-envelope-open-text"></i>
+        </div>
+        <h1>Verify Your Email</h1>
+        <p class="otp-instructions">
+          We've sent a 6-digit verification code to<br />
+          <strong>{{ email }}</strong><br />
+          Please enter it below to continue.
+        </p>
+      </div>
+
+      <form
+        method="POST"
+        action="{{ url_for('auth.verify_otp', email=email) }}"
+        class="otp-form"
+        id="otpForm"
+      >
+        <div class="otp-inputs">
+          {% for i in range(6) %}
+          <input
+            type="text"
+            name="otp{{ i }}"
+            class="otp-input"
+            maxlength="1"
+            oninput="moveToNext(this, {{ i }})"
+            onkeydown="handleOtpKeydown(event, {{ i }})"
+            data-index="{{ i }}"
+          />
+          {% endfor %}
+        </div>
+
+        <div class="otp-timer" id="otpTimer">
+          Code expires in: <span id="countdown">05:00</span>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary auth-btn"
+          id="verifyBtn"
+          disabled
+        >
+          <i class="fas fa-check-circle"></i>
+          Verify & Continue
+        </button>
+      </form>
+
+      <div class="resend-link">
+        <p>
+          Didn't receive the code?
+          <a href="#" id="resendLink" onclick="resendOTP()">Resend OTP</a>
+        </p>
+      </div>
+
+      <div class="auth-footer">
+        <p>
+          Wrong email?
+          <a href="{{ url_for('auth.signup') }}" class="auth-link">Go back</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-decoration">
+    <div class="floating-hearts-auth">
+      {% for i in range(8) %}
+      <div class="heart-auth" style="--i: {{ i }};"></div>
+      {% endfor %}
+    </div>
+    <div class="decoration-content">
+      <h2>Almost There! 💌</h2>
+      <p>Just one more step to secure your private love space.</p>
+      <div class="decoration-features">
+        <div class="decoration-item">
+          <i class="fas fa-shield-alt"></i>
+          <span>Secure Verification</span>
+        </div>
+        <div class="decoration-item">
+          <i class="fas fa-bolt"></i>
+          <span>Quick Process</span>
+        </div>
+        <div class="decoration-item">
+          <i class="fas fa-heart"></i>
+          <span>Start Your Journey</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let otp = ["", "", "", "", "", ""];
+  let timerInterval;
+
+  function moveToNext(input, index) {
+    const value = input.value;
+
+    // Only allow numbers
+    if (!/^\d*$/.test(value)) {
+      input.value = "";
+      return;
+    }
+
+    if (value.length === 1) {
+      otp[index] = value;
+      input.classList.add("filled");
+
+      // Move to next input
+      if (index < 5) {
+        const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
+        nextInput.focus();
+      }
+    } else if (value.length === 0) {
+      otp[index] = "";
+      input.classList.remove("filled");
+
+      // Move to previous input
+      if (index > 0) {
+        const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
+        prevInput.focus();
+      }
+    }
+
+    checkOTPComplete();
+  }
+
+  function handleOtpKeydown(event, index) {
+    if (event.key === "Backspace" && event.target.value === "" && index > 0) {
+      const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
+      prevInput.focus();
+    } else if (event.key === "ArrowLeft" && index > 0) {
+      const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
+      prevInput.focus();
+      event.preventDefault();
+    } else if (event.key === "ArrowRight" && index < 5) {
+      const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
+      nextInput.focus();
+      event.preventDefault();
+    }
+  }
+
+  function checkOTPComplete() {
+    const isComplete = otp.every((digit) => digit !== "");
+    const verifyBtn = document.getElementById("verifyBtn");
+    verifyBtn.disabled = !isComplete;
+
+    if (isComplete) {
+      // Set the complete OTP value in a hidden field or prepare for submission
+      const form = document.getElementById("otpForm");
+      const hiddenInput = document.createElement("input");
+      hiddenInput.type = "hidden";
+      hiddenInput.name = "otp";
+      hiddenInput.value = otp.join("");
+      form.appendChild(hiddenInput);
+    }
+  }
+
+  function startTimer(duration) {
+    const timerDisplay = document.getElementById("countdown");
+    const timerContainer = document.getElementById("otpTimer");
+    let time = duration;
+
+    timerInterval = setInterval(function () {
+      const minutes = Math.floor(time / 60);
+      const seconds = time % 60;
+
+      timerDisplay.textContent = `${minutes
+        .toString()
+        .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+      if (time <= 30) {
+        timerContainer.classList.add("expiring");
+      }
+
+      if (time <= 0) {
+        clearInterval(timerInterval);
+        timerDisplay.textContent = "00:00";
+        document.getElementById("resendLink").style.display = "inline";
+      }
+
+      time--;
+    }, 1000);
+  }
+
+  function resendOTP() {
+    const resendLink = document.getElementById("resendLink");
+    resendLink.style.display = "none";
+
+    // Show loading state
+    resendLink.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> Resending...';
+
+    fetch("/auth/resend-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: "{{ email }}",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("New OTP sent successfully!", "success");
+
+          // Reset timer
+          clearInterval(timerInterval);
+          startTimer(300); // 5 minutes
+
+          // Clear OTP inputs
+          otp = ["", "", "", "", "", ""];
+          document.querySelectorAll(".otp-input").forEach((input) => {
+            input.value = "";
+            input.classList.remove("filled");
+          });
+          document.getElementById("verifyBtn").disabled = true;
+
+          resendLink.innerHTML = "Resend OTP";
+          resendLink.style.display = "none";
+        } else {
+          showNotification(data.error, "error");
+          resendLink.innerHTML = "Resend OTP";
+          resendLink.style.display = "inline";
+        }
+      })
+      .catch((error) => {
+        console.error("Error resending OTP:", error);
+        showNotification("Error resending OTP", "error");
+        resendLink.innerHTML = "Resend OTP";
+        resendLink.style.display = "inline";
+      });
+  }
+
+  function showNotification(message, type) {
+    // Create flash message
+    const flashContainer =
+      document.querySelector(".flash-container") || createFlashContainer();
+    const flashMessage = document.createElement("div");
+    flashMessage.className = `flash-message ${type}`;
+    flashMessage.innerHTML = `
+        ${message}
+        <span class="flash-close">&times;</span>
+    `;
+
+    flashContainer.appendChild(flashMessage);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      flashMessage.remove();
+    }, 5000);
+
+    // Close button functionality
+    flashMessage.querySelector(".flash-close").onclick = () => {
+      flashMessage.remove();
+    };
+  }
+
+  function createFlashContainer() {
+    const container = document.createElement("div");
+    container.className = "flash-container";
+    document.body.appendChild(container);
+    return container;
+  }
+
+  // Initialize when page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    // Start 5-minute timer
+    startTimer(300);
+
+    // Focus first OTP input
+    document.querySelector('[data-index="0"]').focus();
+
+    // Auto-submit when OTP is complete
+    document.getElementById("otpForm").addEventListener("submit", function (e) {
+      const verifyBtn = document.getElementById("verifyBtn");
+      verifyBtn.classList.add("loading");
+      verifyBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,511 @@
+{% extends "base.html" %} {% block title %}Sign Up - LunaLink{% endblock %} {%
+block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/auth.css') }}"
+/>
+<style>
+  .invitation-notice {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8ff 100%);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    border-left: 5px solid #4caf50;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  .invitation-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  .invitation-header i {
+    font-size: 24px;
+    color: #4caf50;
+  }
+  .invitation-header h3 {
+    margin: 0;
+    color: #2e7d32;
+    font-size: 1.3rem;
+  }
+  .inviter-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .inviter-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+  }
+  .inviter-details {
+    flex: 1;
+  }
+  .inviter-details strong {
+    display: block;
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  .inviter-details span {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  .invitation-message {
+    margin: 0;
+    color: #555;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    text-align: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+  }
+
+  .password-requirements {
+    margin-top: 10px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+
+  .requirement {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    transition: color 0.3s ease;
+  }
+
+  .requirement:last-child {
+    margin-bottom: 0;
+  }
+
+  .requirement i {
+    font-size: 0.8rem;
+    width: 16px;
+    text-align: center;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <i class="fas fa-moon"></i>
+        <h1>LunaLink</h1>
+      </div>
+      <p class="auth-subtitle">
+        Create your account and start your journey together
+      </p>
+    </div>
+
+    <!-- Invitation Notice -->
+    {% if inviter %}
+    <div class="invitation-notice">
+      <div class="invitation-header">
+        <i class="fas fa-envelope-open-text"></i>
+        <h3>You're Invited! 💌</h3>
+      </div>
+      <div class="invitation-content">
+        <div class="inviter-info">
+          <div class="inviter-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="inviter-details">
+            <strong>{{ inviter.name }}</strong>
+            <span>invited you to join LunaLink</span>
+          </div>
+        </div>
+        <p class="invitation-message">
+          🎉 Once you verify your email, you'll be automatically connected with
+          <strong>{{ inviter.name }}</strong>
+          and can start chatting immediately! Your private love space is waiting
+          for you. 💕
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <form
+      method="POST"
+      action="{{ url_for('auth.signup') }}{% if invite_code %}?invite={{ invite_code }}{% endif %}"
+      class="auth-form"
+      id="signupForm"
+    >
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <div class="input-with-icon">
+          <i class="fas fa-user"></i>
+          <input
+            type="text"
+            name="name"
+            class="form-input"
+            placeholder="Enter your full name"
+            required
+            {%
+            if
+            inviter
+            %}
+            value="{{ inviter.partner_name_suggestion if inviter.partner_name_suggestion else '' }}"
+            {%
+            endif
+            %}
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="input-with-icon">
+          <i class="fas fa-envelope"></i>
+          <input
+            type="email"
+            name="email"
+            class="form-input"
+            placeholder="Enter your email"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-with-icon">
+          <i class="fas fa-lock"></i>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            class="form-input"
+            placeholder="Create a password"
+            required
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            onclick="togglePassword(this)"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <div class="password-strength">
+          <div class="strength-bar">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <span class="strength-text" id="strengthText">Password strength</span>
+        </div>
+        <div class="password-requirements" id="passwordRequirements">
+          <div class="requirement" id="reqLength">
+            <i class="fas fa-times"></i>
+            <span>At least 8 characters</span>
+          </div>
+          <div class="requirement" id="reqLowercase">
+            <i class="fas fa-times"></i>
+            <span>One lowercase letter</span>
+          </div>
+          <div class="requirement" id="reqUppercase">
+            <i class="fas fa-times"></i>
+            <span>One uppercase letter</span>
+          </div>
+          <div class="requirement" id="reqNumber">
+            <i class="fas fa-times"></i>
+            <span>One number</span>
+          </div>
+          <div class="requirement" id="reqSpecial">
+            <i class="fas fa-times"></i>
+            <span>One special character</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <div class="input-with-icon">
+          <i class="fas fa-lock"></i>
+          <input
+            type="password"
+            name="confirm_password"
+            id="confirmPassword"
+            class="form-input"
+            placeholder="Confirm your password"
+            required
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            onclick="togglePassword(this)"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <div class="password-match" id="passwordMatch">
+          <i class="fas fa-check"></i>
+          <span>Passwords match</span>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="checkbox-label">
+          <input type="checkbox" name="terms" id="termsCheckbox" required />
+          <span class="checkmark"></span>
+          I agree to the <a href="#" class="auth-link">Terms of Service</a> and
+          <a href="#" class="auth-link">Privacy Policy</a>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary auth-btn" id="submitBtn">
+        <i class="fas fa-user-plus"></i>
+        {% if inviter %}Accept Invitation & Join{% else %}Create Account{% endif
+        %}
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>
+        Already have an account?
+        <a href="{{ url_for('auth.login') }}" class="auth-link">Sign in here</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="auth-decoration">
+    <div class="floating-hearts-auth">
+      {% for i in range(8) %}
+      <div class="heart-auth" style="--i: {{ i }};"></div>
+      {% endfor %}
+    </div>
+    <div class="decoration-content">
+      <h2>Begin Your Love Story</h2>
+      <p>
+        Join thousands of couples building their private digital love space.
+      </p>
+      <div class="decoration-features">
+        <div class="decoration-item">
+          <i class="fas fa-shield-alt"></i>
+          <span>Military-grade Security</span>
+        </div>
+        <div class="decoration-item">
+          <i class="fas fa-magic"></i>
+          <span>Beautiful Themes</span>
+        </div>
+        <div class="decoration-item">
+          <i class="fas fa-mobile-alt"></i>
+          <span>Mobile Friendly</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const passwordInput = document.getElementById("password");
+    const confirmInput = document.getElementById("confirmPassword");
+    const strengthFill = document.getElementById("strengthFill");
+    const strengthText = document.getElementById("strengthText");
+    const passwordMatch = document.getElementById("passwordMatch");
+    const passwordRequirements = document.getElementById(
+      "passwordRequirements"
+    );
+    const termsCheckbox = document.getElementById("termsCheckbox");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function validatePassword(password) {
+      const requirements = {
+        length: password.length >= 8,
+        lowercase: /[a-z]/.test(password),
+        uppercase: /[A-Z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[^a-zA-Z0-9]/.test(password),
+      };
+
+      return requirements;
+    }
+
+    function updatePasswordRequirements(requirements) {
+      Object.keys(requirements).forEach((key) => {
+        const requirementElement = document.getElementById(
+          `req${key.charAt(0).toUpperCase() + key.slice(1)}`
+        );
+        const icon = requirementElement.querySelector("i");
+
+        if (requirements[key]) {
+          icon.className = "fas fa-check";
+          requirementElement.style.color = "#4caf50";
+        } else {
+          icon.className = "fas fa-times";
+          requirementElement.style.color = "#f44336";
+        }
+      });
+    }
+
+    function checkPasswordStrength(password) {
+      const requirements = validatePassword(password);
+      const metRequirements =
+        Object.values(requirements).filter(Boolean).length;
+      const totalRequirements = Object.keys(requirements).length;
+      const strength = (metRequirements / totalRequirements) * 100;
+
+      let feedback = "";
+      switch (metRequirements) {
+        case 0:
+        case 1:
+          feedback = "Very Weak";
+          break;
+        case 2:
+          feedback = "Weak";
+          break;
+        case 3:
+          feedback = "Medium";
+          break;
+        case 4:
+          feedback = "Strong";
+          break;
+        case 5:
+          feedback = "Very Strong";
+          break;
+      }
+
+      return { strength, feedback, requirements };
+    }
+
+    function updatePasswordStrength() {
+      const password = passwordInput.value;
+      const { strength, feedback, requirements } =
+        checkPasswordStrength(password);
+
+      strengthFill.style.width = strength + "%";
+      strengthText.textContent = feedback;
+
+      if (strength < 40) {
+        strengthFill.style.background = "#f44336";
+      } else if (strength < 70) {
+        strengthFill.style.background = "#ff9800";
+      } else {
+        strengthFill.style.background = "#4caf50";
+      }
+
+      updatePasswordRequirements(requirements);
+      updateSubmitButtonState();
+    }
+
+    function checkPasswordMatch() {
+      const password = passwordInput.value;
+      const confirm = confirmInput.value;
+
+      if (confirm.length === 0) {
+        passwordMatch.style.display = "none";
+      } else if (password === confirm) {
+        passwordMatch.style.display = "flex";
+        passwordMatch.style.color = "#4caf50";
+        passwordMatch.innerHTML =
+          '<i class="fas fa-check"></i><span>Passwords match</span>';
+      } else {
+        passwordMatch.style.display = "flex";
+        passwordMatch.style.color = "#f44336";
+        passwordMatch.innerHTML =
+          '<i class="fas fa-times"></i><span>Passwords do not match</span>';
+      }
+
+      updateSubmitButtonState();
+    }
+
+    function updateSubmitButtonState() {
+      const password = passwordInput.value;
+      const confirm = confirmInput.value;
+      const { requirements } = checkPasswordStrength(password);
+
+      const allRequirementsMet = Object.values(requirements).every(Boolean);
+      const passwordsMatch = password === confirm && password.length > 0;
+      const termsAccepted = termsCheckbox.checked;
+
+      if (allRequirementsMet && passwordsMatch && termsAccepted) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = "1";
+        submitBtn.style.cursor = "pointer";
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = "0.6";
+        submitBtn.style.cursor = "not-allowed";
+      }
+    }
+
+    function togglePassword(button) {
+      const input = button.parentElement.querySelector("input");
+      const icon = button.querySelector("i");
+
+      if (input.type === "password") {
+        input.type = "text";
+        icon.className = "fas fa-eye-slash";
+      } else {
+        input.type = "password";
+        icon.className = "fas fa-eye";
+      }
+    }
+
+    passwordInput.addEventListener("input", updatePasswordStrength);
+    passwordInput.addEventListener("input", checkPasswordMatch);
+    confirmInput.addEventListener("input", checkPasswordMatch);
+    termsCheckbox.addEventListener("change", updateSubmitButtonState);
+
+    // Initialize
+    updatePasswordStrength();
+    checkPasswordMatch();
+    updateSubmitButtonState();
+
+    // Form submission validation
+    document
+      .getElementById("signupForm")
+      .addEventListener("submit", function (e) {
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        if (password !== confirm) {
+          e.preventDefault();
+          showNotification("Passwords do not match!", "error");
+          return;
+        }
+
+        const { requirements } = checkPasswordStrength(password);
+        const allRequirementsMet = Object.values(requirements).every(Boolean);
+
+        if (!allRequirementsMet) {
+          e.preventDefault();
+          showNotification("Please meet all password requirements", "error");
+          return;
+        }
+
+        if (!termsCheckbox.checked) {
+          e.preventDefault();
+          showNotification(
+            "Please accept the Terms of Service and Privacy Policy",
+            "error"
+          );
+          return;
+        }
+
+        // Add loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.classList.add("loading");
+        submitBtn.disabled = true;
+        submitBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+      });
+  });
+</script>
+{% endblock %}
