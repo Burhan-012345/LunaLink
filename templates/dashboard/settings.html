@@ -1,0 +1,1305 @@
+{% extends "base.html" %} {% block title %}Settings - LunaLink{% endblock %} {%
+block extra_css %}
+<style>
+  .settings-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .settings-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .settings-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+
+  .settings-title i {
+    color: var(--primary-color);
+    font-size: 2rem;
+  }
+
+  .settings-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .settings-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+  }
+
+  /* Settings Navigation */
+  .settings-nav {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+  }
+
+  .nav-item.active {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  .nav-item i {
+    width: 20px;
+    text-align: center;
+  }
+
+  /* Settings Sections */
+  .settings-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .settings-section {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    display: none;
+  }
+
+  .settings-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .section-header {
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-title i {
+    color: var(--primary-color);
+  }
+
+  .section-description {
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* Theme Selector */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .theme-option {
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+
+  .theme-option:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+  }
+
+  .theme-option.active {
+    border-color: var(--primary-color);
+    background: rgba(255, 75, 110, 0.1);
+  }
+
+  .theme-preview {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
+  .theme-dark .theme-preview {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: white;
+  }
+
+  .theme-light .theme-preview {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    color: #333;
+  }
+
+  .theme-romantic .theme-preview {
+    background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+    color: #8b0000;
+  }
+
+  .theme-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+  }
+
+  .theme-description {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  /* Wallpaper Grid */
+  .wallpaper-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .wallpaper-option {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    aspect-ratio: 1;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  .wallpaper-option:hover {
+    transform: scale(1.05);
+  }
+
+  .wallpaper-option.active {
+    border-color: var(--primary-color);
+  }
+
+  .wallpaper-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .wallpaper-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .wallpaper-option:hover .wallpaper-overlay {
+    opacity: 1;
+  }
+
+  .wallpaper-overlay i {
+    color: white;
+    font-size: 1.5rem;
+  }
+
+  /* Toggle Switches */
+  .toggle-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .toggle-group:last-child {
+    border-bottom: none;
+  }
+
+  .toggle-label {
+    flex: 1;
+  }
+
+  .toggle-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .toggle-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: 0.4s;
+    border-radius: 34px;
+  }
+
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+
+  input:checked + .toggle-slider {
+    background-color: var(--primary-color);
+  }
+
+  input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+  }
+
+  /* Form Styles */
+  .settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .form-input,
+  .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .form-input:focus,
+  .form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 75, 110, 0.1);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Danger Zone */
+  .danger-zone {
+    border: 2px solid #f44336;
+    border-radius: 15px;
+    padding: 2rem;
+    background: rgba(244, 67, 54, 0.05);
+  }
+
+  .danger-title {
+    color: #f44336;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .danger-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .danger-btn {
+    background: transparent;
+    border: 1px solid #f44336;
+    color: #f44336;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .danger-btn:hover {
+    background: #f44336;
+    color: white;
+  }
+
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-primary);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .close-btn:hover {
+    color: var(--primary-color);
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .settings-container {
+      padding: 1rem;
+    }
+
+    .settings-content {
+      grid-template-columns: 1fr;
+    }
+
+    .settings-nav {
+      position: static;
+      margin-bottom: 1rem;
+    }
+
+    .theme-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .settings-section {
+      padding: 1.5rem;
+    }
+
+    .toggle-group {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .wallpaper-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="settings-container">
+  <div class="settings-header">
+    <div class="settings-title">
+      <i class="fas fa-cog"></i>
+      <h1>Settings</h1>
+    </div>
+    <p class="settings-subtitle">
+      Customize your LunaLink experience and manage your preferences
+    </p>
+  </div>
+
+  <div class="settings-content">
+    <!-- Settings Navigation -->
+    <div class="settings-nav">
+      <div class="nav-item active" data-section="appearance">
+        <i class="fas fa-palette"></i>
+        <span>Appearance</span>
+      </div>
+      <div class="nav-item" data-section="notifications">
+        <i class="fas fa-bell"></i>
+        <span>Notifications</span>
+      </div>
+      <div class="nav-item" data-section="privacy">
+        <i class="fas fa-shield-alt"></i>
+        <span>Privacy & Security</span>
+      </div>
+      <div class="nav-item" data-section="account">
+        <i class="fas fa-user-cog"></i>
+        <span>Account</span>
+      </div>
+      <div class="nav-item" data-section="danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Danger Zone</span>
+      </div>
+    </div>
+
+    <!-- Settings Sections -->
+    <div class="settings-sections">
+      <!-- Appearance Section -->
+      <div class="settings-section active" id="appearance-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-palette"></i>
+            Appearance
+          </h2>
+          <p class="section-description">
+            Customize how LunaLink looks and feels
+          </p>
+        </div>
+
+        <div class="settings-form">
+          <div class="form-group">
+            <label class="form-label">Theme</label>
+            <div class="theme-grid">
+              <div class="theme-option theme-dark active" data-theme="dark">
+                <div class="theme-preview">
+                  <i class="fas fa-moon"></i>
+                </div>
+                <div class="theme-name">Dark</div>
+                <div class="theme-description">Easy on the eyes</div>
+              </div>
+              <div class="theme-option theme-light" data-theme="light">
+                <div class="theme-preview">
+                  <i class="fas fa-sun"></i>
+                </div>
+                <div class="theme-name">Light</div>
+                <div class="theme-description">Clean and bright</div>
+              </div>
+              <div class="theme-option theme-romantic" data-theme="romantic">
+                <div class="theme-preview">
+                  <i class="fas fa-heart"></i>
+                </div>
+                <div class="theme-name">Romantic</div>
+                <div class="theme-description">Soft and loving</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Chat Wallpaper</label>
+            <div class="wallpaper-grid">
+              {% for i in range(1, 7) %}
+              <div
+                class="wallpaper-option {% if i == 1 %}active{% endif %}"
+                data-wallpaper="wallpaper{{ i }}.jpg"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/wallpapers/wallpaper' ~ i ~ '.jpg') }}"
+                  alt="Wallpaper {{ i }}"
+                  class="wallpaper-preview"
+                  onerror="this.src='https://picsum.photos/200/200?random={{ i }}'"
+                />
+                <div class="wallpaper-overlay">
+                  <i class="fas fa-check"></i>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="resetAppearance()"
+            >
+              <i class="fas fa-undo"></i> Reset
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="saveAppearance()"
+            >
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications Section -->
+      <div class="settings-section" id="notifications-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-bell"></i>
+            Notifications
+          </h2>
+          <p class="section-description">
+            Manage how and when you receive notifications
+          </p>
+        </div>
+
+        <div class="settings-form">
+          <div class="toggle-group">
+            <div class="toggle-label">
+              <div class="toggle-title">Push Notifications</div>
+              <p class="toggle-description">
+                Receive notifications for new messages and activities
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notificationsEnabled" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <div class="toggle-label">
+              <div class="toggle-title">Sound Alerts</div>
+              <p class="toggle-description">
+                Play sounds for new messages and notifications
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="soundsEnabled" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <div class="toggle-label">
+              <div class="toggle-title">Email Notifications</div>
+              <p class="toggle-description">
+                Receive email summaries and important updates
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="emailNotifications" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <div class="toggle-label">
+              <div class="toggle-title">Background Music</div>
+              <p class="toggle-description">
+                Play romantic background music in chat
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="musicEnabled" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="saveNotificationSettings()"
+            >
+              <i class="fas fa-save"></i> Save Settings
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacy & Security Section -->
+      <div class="settings-section" id="privacy-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-shield-alt"></i>
+            Privacy & Security
+          </h2>
+          <p class="section-description">
+            Manage your privacy preferences and security settings
+          </p>
+        </div>
+
+        <div class="settings-form">
+          <div class="toggle-group">
+            <div class="toggle-label">
+              <div class="toggle-title">Online Status</div>
+              <p class="toggle-description">
+                Show when you're online to your partner
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="showOnlineStatus" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <div class="toggle-label">
+              <div class="toggle-title">Read Receipts</div>
+              <p class="toggle-description">Show when you've read messages</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="readReceipts" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <div class="toggle-label">
+              <div class="toggle-title">Typing Indicators</div>
+              <p class="toggle-description">Show when you're typing</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="typingIndicators" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sessionTimeout"
+              >Session Timeout</label
+            >
+            <select id="sessionTimeout" class="form-select">
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+              <option value="120">2 hours</option>
+              <option value="0">Never (stay logged in)</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="savePrivacySettings()"
+            >
+              <i class="fas fa-save"></i> Save Settings
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Section -->
+      <div class="settings-section" id="account-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-user-cog"></i>
+            Account Settings
+          </h2>
+          <p class="section-description">
+            Manage your account preferences and data
+          </p>
+        </div>
+
+        <div class="settings-form">
+          <div class="form-group">
+            <label class="form-label" for="language">Language</label>
+            <select id="language" class="form-select">
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="timezone">Timezone</label>
+            <select id="timezone" class="form-select">
+              <option value="UTC">UTC</option>
+              <option value="EST">Eastern Time (EST)</option>
+              <option value="PST">Pacific Time (PST)</option>
+              <option value="CET">Central European Time (CET)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="dateFormat">Date Format</label>
+            <select id="dateFormat" class="form-select">
+              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="saveAccountSettings()"
+            >
+              <i class="fas fa-save"></i> Save Settings
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone Section -->
+      <div class="settings-section" id="danger-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-exclamation-triangle"></i>
+            Danger Zone
+          </h2>
+          <p class="section-description">
+            Irreversible actions that affect your account
+          </p>
+        </div>
+
+        <div class="danger-zone">
+          <h3 class="danger-title">
+            <i class="fas fa-trash-alt"></i>
+            Delete Account
+          </h3>
+
+          <p style="color: var(--text-secondary); margin-bottom: 1.5rem">
+            Permanently delete your account and all associated data. This action
+            cannot be undone.
+          </p>
+          <button class="danger-btn" onclick="deleteAccount()">
+            <i class="fas fa-trash"></i>
+            Delete My Account
+          </button>
+
+          <h3 class="danger-title" style="margin-top: 2rem">
+            <i class="fas fa-eraser"></i>
+            Clear All Data
+          </h3>
+          <p style="color: var(--text-secondary); margin-bottom: 1.5rem">
+            Delete all your messages, media, and memories while keeping your
+            account.
+          </p>
+          <button class="danger-btn" onclick="clearAllData()">
+            <i class="fas fa-eraser"></i>
+            Clear All My Data
+          </button>
+
+          <h3 class="danger-title" style="margin-top: 2rem">
+            <i class="fas fa-user-times"></i>
+            Remove Partner
+          </h3>
+          <p style="color: var(--text-secondary); margin-bottom: 1.5rem">
+            Disconnect from your partner and remove all shared data.
+          </p>
+          <button class="danger-btn" onclick="removePartner()">
+            <i class="fas fa-user-times"></i>
+            Remove Partner Connection
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modals -->
+<div class="modal" id="confirmModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="confirmTitle">Confirm Action</h3>
+      <button class="close-btn" onclick="closeConfirmModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMessage">Are you sure you want to proceed?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeConfirmModal()">
+        Cancel
+      </button>
+      <button class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let currentSettings = {};
+  let pendingAction = null;
+
+  // Initialize settings page
+  document.addEventListener("DOMContentLoaded", function () {
+    initializeSettings();
+    setupNavigation();
+    loadCurrentSettings();
+  });
+
+  function initializeSettings() {
+    // Set up navigation
+    document.querySelectorAll(".nav-item").forEach((item) => {
+      item.addEventListener("click", function () {
+        const section = this.dataset.section;
+        showSection(section);
+      });
+    });
+
+    // Set up theme selection
+    document.querySelectorAll(".theme-option").forEach((option) => {
+      option.addEventListener("click", function () {
+        document
+          .querySelectorAll(".theme-option")
+          .forEach((opt) => opt.classList.remove("active"));
+        this.classList.add("active");
+      });
+    });
+
+    // Set up wallpaper selection
+    document.querySelectorAll(".wallpaper-option").forEach((option) => {
+      option.addEventListener("click", function () {
+        document
+          .querySelectorAll(".wallpaper-option")
+          .forEach((opt) => opt.classList.remove("active"));
+        this.classList.add("active");
+      });
+    });
+  }
+
+  function setupNavigation() {
+    // Show first section by default
+    showSection("appearance");
+  }
+
+  function showSection(sectionName) {
+    // Update navigation
+    document.querySelectorAll(".nav-item").forEach((item) => {
+      item.classList.remove("active");
+      if (item.dataset.section === sectionName) {
+        item.classList.add("active");
+      }
+    });
+
+    // Show corresponding section
+    document.querySelectorAll(".settings-section").forEach((section) => {
+      section.classList.remove("active");
+    });
+    document.getElementById(sectionName + "-section").classList.add("active");
+  }
+
+  function loadCurrentSettings() {
+    // Load settings from server or use defaults
+    fetch("/dashboard/get-settings")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          currentSettings = data.settings;
+          applySettings(currentSettings);
+        }
+      })
+      .catch((error) => {
+        console.error("Error loading settings:", error);
+        // Use default settings
+        currentSettings = {
+          theme: "dark",
+          wallpaper: "wallpaper1.jpg",
+          notificationsEnabled: true,
+          soundsEnabled: true,
+          emailNotifications: true,
+          musicEnabled: false,
+          showOnlineStatus: true,
+          readReceipts: true,
+          typingIndicators: true,
+          sessionTimeout: "30",
+          language: "en",
+          timezone: "UTC",
+          dateFormat: "MM/DD/YYYY",
+        };
+        applySettings(currentSettings);
+      });
+  }
+
+  function applySettings(settings) {
+    // Apply theme
+    document.querySelectorAll(".theme-option").forEach((option) => {
+      option.classList.remove("active");
+      if (option.dataset.theme === settings.theme) {
+        option.classList.add("active");
+      }
+    });
+
+    // Apply wallpaper
+    document.querySelectorAll(".wallpaper-option").forEach((option) => {
+      option.classList.remove("active");
+      if (option.dataset.wallpaper === settings.wallpaper) {
+        option.classList.add("active");
+      }
+    });
+
+    // Apply toggle settings
+    document.getElementById("notificationsEnabled").checked =
+      settings.notificationsEnabled;
+    document.getElementById("soundsEnabled").checked = settings.soundsEnabled;
+    document.getElementById("emailNotifications").checked =
+      settings.emailNotifications;
+    document.getElementById("musicEnabled").checked = settings.musicEnabled;
+    document.getElementById("showOnlineStatus").checked =
+      settings.showOnlineStatus;
+    document.getElementById("readReceipts").checked = settings.readReceipts;
+    document.getElementById("typingIndicators").checked =
+      settings.typingIndicators;
+
+    // Apply select settings
+    document.getElementById("sessionTimeout").value = settings.sessionTimeout;
+    document.getElementById("language").value = settings.language;
+    document.getElementById("timezone").value = settings.timezone;
+    document.getElementById("dateFormat").value = settings.dateFormat;
+  }
+
+  function saveAppearance() {
+    const theme = document.querySelector(".theme-option.active").dataset.theme;
+    const wallpaper = document.querySelector(".wallpaper-option.active").dataset
+      .wallpaper;
+
+    const settings = {
+      theme: theme,
+      wallpaper: wallpaper,
+    };
+
+    saveSettings(settings, "Appearance settings saved successfully!");
+  }
+
+  function saveNotificationSettings() {
+    const settings = {
+      notificationsEnabled: document.getElementById("notificationsEnabled")
+        .checked,
+      soundsEnabled: document.getElementById("soundsEnabled").checked,
+      emailNotifications: document.getElementById("emailNotifications").checked,
+      musicEnabled: document.getElementById("musicEnabled").checked,
+    };
+
+    saveSettings(settings, "Notification settings saved successfully!");
+  }
+
+  function savePrivacySettings() {
+    const settings = {
+      showOnlineStatus: document.getElementById("showOnlineStatus").checked,
+      readReceipts: document.getElementById("readReceipts").checked,
+      typingIndicators: document.getElementById("typingIndicators").checked,
+      sessionTimeout: document.getElementById("sessionTimeout").value,
+    };
+
+    saveSettings(settings, "Privacy settings saved successfully!");
+  }
+
+  function saveAccountSettings() {
+    const settings = {
+      language: document.getElementById("language").value,
+      timezone: document.getElementById("timezone").value,
+      dateFormat: document.getElementById("dateFormat").value,
+    };
+
+    saveSettings(settings, "Account settings saved successfully!");
+  }
+
+  function saveSettings(settings, successMessage) {
+    // Show loading state
+    const saveBtn = event.target;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
+
+    // Merge with current settings
+    const updatedSettings = { ...currentSettings, ...settings };
+
+    fetch("/dashboard/update-settings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedSettings),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          currentSettings = updatedSettings;
+          showNotification(successMessage, "success");
+
+          // Apply theme immediately if changed
+          if (settings.theme) {
+            document.documentElement.setAttribute("data-theme", settings.theme);
+          }
+        } else {
+          showNotification(data.error || "Error saving settings", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error saving settings:", error);
+        showNotification("Error saving settings", "error");
+      })
+      .finally(() => {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+      });
+  }
+
+  function resetAppearance() {
+    if (confirm("Reset all appearance settings to default?")) {
+      const defaultSettings = {
+        theme: "dark",
+        wallpaper: "wallpaper1.jpg",
+      };
+      applySettings({ ...currentSettings, ...defaultSettings });
+      showNotification("Appearance settings reset", "info");
+    }
+  }
+
+  // Danger Zone Functions
+  function deleteAccount() {
+    showConfirmModal(
+      "Delete Account",
+      "This will permanently delete your account and all associated data. This action cannot be undone. Are you sure you want to proceed?",
+      "confirmDeleteAccount"
+    );
+  }
+
+  function clearAllData() {
+    showConfirmModal(
+      "Clear All Data",
+      "This will delete all your messages, media, and memories while keeping your account. This action cannot be undone.",
+      "confirmClearData"
+    );
+  }
+
+  function removePartner() {
+    showConfirmModal(
+      "Remove Partner",
+      "This will disconnect you from your partner and remove all shared data. Your partner will be notified.",
+      "confirmRemovePartner"
+    );
+  }
+
+  function showConfirmModal(title, message, action) {
+    document.getElementById("confirmTitle").textContent = title;
+    document.getElementById("confirmMessage").textContent = message;
+
+    const confirmBtn = document.getElementById("confirmActionBtn");
+    confirmBtn.onclick = function () {
+      window[action]();
+      closeConfirmModal();
+    };
+
+    document.getElementById("confirmModal").style.display = "block";
+  }
+
+  function closeConfirmModal() {
+    document.getElementById("confirmModal").style.display = "none";
+  }
+
+  function confirmDeleteAccount() {
+    showNotification("Deleting account...", "warning");
+
+    fetch("/dashboard/delete-account", {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("Account deleted successfully", "success");
+          setTimeout(() => {
+            window.location.href = "/auth/logout";
+          }, 2000);
+        } else {
+          showNotification(data.error || "Error deleting account", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting account:", error);
+        showNotification("Error deleting account", "error");
+      });
+  }
+
+  function confirmClearData() {
+    showNotification("Clearing all data...", "warning");
+
+    fetch("/dashboard/clear-data", {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("All data cleared successfully", "success");
+          // Refresh the page
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          showNotification(data.error || "Error clearing data", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error clearing data:", error);
+        showNotification("Error clearing data", "error");
+      });
+  }
+
+  function confirmRemovePartner() {
+    showNotification("Removing partner...", "warning");
+
+    fetch("/dashboard/remove-partner", {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("Partner removed successfully", "success");
+          // Refresh the page
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          showNotification(data.error || "Error removing partner", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error removing partner:", error);
+        showNotification("Error removing partner", "error");
+      });
+  }
+
+  function showNotification(message, type) {
+    const notification = document.createElement("div");
+    notification.className = `flash-message ${type}`;
+    notification.innerHTML = `
+        ${message}
+        <span class="flash-close">&times;</span>
+    `;
+
+    const container =
+      document.querySelector(".flash-container") || createFlashContainer();
+    container.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
+
+    notification.querySelector(".flash-close").onclick = () => {
+      notification.remove();
+    };
+  }
+
+  function createFlashContainer() {
+    const container = document.createElement("div");
+    container.className = "flash-container";
+    document.body.appendChild(container);
+    return container;
+  }
+
+  // Theme preview functionality
+  document.querySelectorAll(".theme-option").forEach((option) => {
+    option.addEventListener("click", function () {
+      const theme = this.dataset.theme;
+      // Preview theme change
+      document.documentElement.setAttribute("data-theme", theme);
+    });
+  });
+
+  // Add keyboard navigation
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeConfirmModal();
+    }
+  });
+</script>
+{% endblock %}

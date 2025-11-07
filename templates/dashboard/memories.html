@@ -1,0 +1,671 @@
+{% extends "base.html" %} {% block title %}Memories - LunaLink{% endblock %} {%
+block extra_css %}
+<style>
+  .memories-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .memories-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .memories-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+
+  .memories-title i {
+    color: var(--primary-color);
+    font-size: 2rem;
+  }
+
+  .memories-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .memories-timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .memories-timeline::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: var(--primary-color);
+    opacity: 0.3;
+  }
+
+  .memory-item {
+    position: relative;
+    margin-bottom: 3rem;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .memory-item:nth-child(odd) {
+    justify-content: flex-start;
+  }
+
+  .memory-item:nth-child(even) {
+    justify-content: flex-end;
+  }
+
+  .memory-content {
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 45%;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .memory-item:nth-child(odd) .memory-content {
+    margin-right: auto;
+  }
+
+  .memory-item:nth-child(even) .memory-content {
+    margin-left: auto;
+  }
+
+  .memory-content:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .memory-timeline-marker {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    border: 4px solid var(--bg-primary);
+    z-index: 2;
+  }
+
+  .memory-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .memory-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+  }
+
+  .memory-sender {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .memory-time {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  .memory-body {
+    margin-bottom: 1rem;
+  }
+
+  .memory-text {
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .memory-media {
+    margin-top: 1rem;
+    border-radius: 10px;
+    overflow: hidden;
+    max-width: 100%;
+  }
+
+  .memory-media img,
+  .memory-media video {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .memory-audio {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+  }
+
+  .memory-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .memory-type {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .memory-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .memory-action-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+  }
+
+  .memory-action-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  .milestone-memory {
+    border-left: 4px solid var(--accent-color);
+  }
+
+  .milestone-badge {
+    background: var(--accent-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+
+  .empty-memories {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+  }
+
+  .empty-memories i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+  }
+
+  .empty-memories h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+
+  .load-more-memories {
+    text-align: center;
+    margin-top: 3rem;
+  }
+
+  .memories-filters {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .filter-btn.active,
+  .filter-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .memories-container {
+      padding: 1rem;
+    }
+
+    .memories-timeline::before {
+      left: 30px;
+    }
+
+    .memory-item {
+      justify-content: flex-start !important;
+      padding-left: 60px;
+    }
+
+    .memory-content {
+      max-width: 100%;
+      margin: 0 !important;
+    }
+
+    .memory-timeline-marker {
+      left: 30px;
+    }
+
+    .memories-filters {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .memory-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .memory-footer {
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    .memory-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="memories-container">
+  <div class="memories-header">
+    <div class="memories-title">
+      <i class="fas fa-history"></i>
+      <h1>Your Love Timeline</h1>
+    </div>
+    <p class="memories-subtitle">
+      Relive your precious moments and milestones together. Every message,
+      photo, and memory tells your unique love story.
+    </p>
+  </div>
+
+  <div class="memories-filters">
+    <button class="filter-btn active" data-filter="all">All Memories</button>
+    <button class="filter-btn" data-filter="message">Messages</button>
+    <button class="filter-btn" data-filter="media">Media</button>
+    <button class="filter-btn" data-filter="milestone">Milestones</button>
+  </div>
+
+  <div class="memories-timeline" id="memoriesTimeline">
+    {% if memories %} {% for memory in memories %}
+    <div class="memory-item" data-type="{{ memory.type }}">
+      <div class="memory-timeline-marker"></div>
+      <div
+        class="memory-content {% if memory.is_milestone %}milestone-memory{% endif %}"
+      >
+        {% if memory.is_milestone %}
+        <div class="milestone-badge">
+          <i class="fas fa-trophy"></i> Milestone
+        </div>
+        {% endif %}
+
+        <div class="memory-header">
+          <img
+            src="{{ url_for('static', filename='images/avatars/' + memory.sender_avatar) }}"
+            alt="{{ memory.sender }}"
+            class="memory-avatar"
+          />
+          <div>
+            <h3 class="memory-sender">{{ memory.sender }}</h3>
+            <p class="memory-time">
+              {{ memory.timestamp.strftime('%B %d, %Y at %H:%M') }}
+            </p>
+          </div>
+        </div>
+
+        <div class="memory-body">
+          {% if memory.type == 'message' %}
+          <p class="memory-text">{{ memory.content }}</p>
+          {% elif memory.type == 'media' %}
+          <p class="memory-text">
+            Shared a {{ memory.media.file_type.split('/')[0] }}
+          </p>
+          <div class="memory-media">
+            {% if memory.media.file_type.startswith('image/') %}
+            <img src="{{ memory.media.file_path }}" alt="Shared memory" />
+            {% elif memory.media.file_type.startswith('video/') %}
+            <video controls>
+              <source
+                src="{{ memory.media.file_path }}"
+                type="{{ memory.media.file_type }}"
+              />
+            </video>
+            {% elif memory.media.file_type.startswith('audio/') %}
+            <div class="memory-audio">
+              <audio controls>
+                <source
+                  src="{{ memory.media.file_path }}"
+                  type="{{ memory.media.file_type }}"
+                />
+              </audio>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="memory-footer">
+          <span class="memory-type">
+            {% if memory.type == 'message' %}
+            <i class="fas fa-comment"></i> Message {% elif memory.type ==
+            'media' %} <i class="fas fa-image"></i> Media {% endif %}
+          </span>
+          <div class="memory-actions">
+            <button
+              class="memory-action-btn"
+              onclick="reactToMemory('{{ memory.id }}', '❤️')"
+              title="Love"
+            >
+              <i class="fas fa-heart"></i>
+            </button>
+            <button
+              class="memory-action-btn"
+              onclick="shareMemory('{{ memory.id }}')"
+              title="Share"
+            >
+              <i class="fas fa-share"></i>
+            </button>
+            <button
+              class="memory-action-btn"
+              onclick="saveMemory('{{ memory.id }}')"
+              title="Save"
+            >
+              <i class="fas fa-bookmark"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <div class="empty-memories">
+      <i class="fas fa-history"></i>
+      <h3>No Memories Yet</h3>
+      <p>Your love timeline is waiting to be filled with beautiful moments!</p>
+      <p>
+        Start chatting and sharing with your partner to create lasting memories.
+      </p>
+      <button class="btn btn-primary" onclick="location.href='/chat'">
+        <i class="fas fa-comments"></i> Start Chatting
+      </button>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if memories and memories|length >= 20 %}
+  <div class="load-more-memories">
+    <button class="btn btn-secondary" id="loadMoreMemories">
+      <i class="fas fa-plus"></i> Load More Memories
+    </button>
+  </div>
+  {% endif %}
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let currentMemoryFilter = "all";
+  let memoryPage = 1;
+  let isLoading = false;
+
+  // Initialize memories page
+  document.addEventListener("DOMContentLoaded", function () {
+    setupMemoryFilters();
+    setupLoadMore();
+    addMemoryAnimations();
+  });
+
+  function setupMemoryFilters() {
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        // Update active filter
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+        currentMemoryFilter = this.dataset.filter;
+
+        // Filter memories
+        filterMemories();
+      });
+    });
+  }
+
+  function filterMemories() {
+    const memories = document.querySelectorAll(".memory-item");
+
+    memories.forEach((memory) => {
+      if (currentMemoryFilter === "all") {
+        memory.style.display = "flex";
+      } else {
+        const memoryType = memory.dataset.type;
+        if (memoryType === currentMemoryFilter) {
+          memory.style.display = "flex";
+        } else {
+          memory.style.display = "none";
+        }
+      }
+    });
+  }
+
+  function setupLoadMore() {
+    const loadMoreBtn = document.getElementById("loadMoreMemories");
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener("click", loadMoreMemories);
+    }
+  }
+
+  function loadMoreMemories() {
+    if (isLoading) return;
+
+    isLoading = true;
+    const loadMoreBtn = document.getElementById("loadMoreMemories");
+    loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    loadMoreBtn.disabled = true;
+
+    // Simulate API call - replace with actual implementation
+    setTimeout(() => {
+      // In a real implementation, you'd fetch more memories from the server
+      showNotification("No more memories to load", "info");
+
+      loadMoreBtn.innerHTML =
+        '<i class="fas fa-check"></i> All memories loaded';
+      loadMoreBtn.style.display = "none";
+      isLoading = false;
+    }, 1000);
+  }
+
+  function addMemoryAnimations() {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.animation = "fadeInUp 0.6s ease forwards";
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    document.querySelectorAll(".memory-item").forEach((item) => {
+      item.style.opacity = "0";
+      observer.observe(item);
+    });
+  }
+
+  function reactToMemory(memoryId, reaction) {
+    // Send reaction to server
+    fetch(`/api/memories/${memoryId}/react`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reaction: reaction }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("Reaction added! 💖", "success");
+        } else {
+          showNotification("Error adding reaction", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error reacting to memory:", error);
+        showNotification("Error adding reaction", "error");
+      });
+  }
+
+  function shareMemory(memoryId) {
+    const memory = document.querySelector(`[data-memory-id="${memoryId}"]`);
+    if (!memory) return;
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: "Check out this memory from LunaLink",
+          text: "A special moment from our love timeline",
+          url: window.location.href + `#memory-${memoryId}`,
+        })
+        .catch((error) => {
+          console.log("Error sharing:", error);
+        });
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard
+        .writeText(window.location.href + `#memory-${memoryId}`)
+        .then(() => {
+          showNotification("Memory link copied to clipboard!", "success");
+        });
+    }
+  }
+
+  function saveMemory(memoryId) {
+    // Toggle save state
+    const saveBtn = document.querySelector(
+      `[onclick="saveMemory('${memoryId}')"]`
+    );
+    const isSaved = saveBtn.classList.contains("saved");
+
+    fetch(`/api/memories/${memoryId}/save`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ save: !isSaved }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          if (data.saved) {
+            saveBtn.classList.add("saved");
+            saveBtn.innerHTML = '<i class="fas fa-bookmark"></i>';
+            showNotification("Memory saved to favorites!", "success");
+          } else {
+            saveBtn.classList.remove("saved");
+            saveBtn.innerHTML = '<i class="far fa-bookmark"></i>';
+            showNotification("Memory removed from favorites", "info");
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error saving memory:", error);
+        showNotification("Error saving memory", "error");
+      });
+  }
+
+  function showNotification(message, type) {
+    const notification = document.createElement("div");
+    notification.className = `flash-message ${type}`;
+    notification.innerHTML = `
+        ${message}
+        <span class="flash-close">&times;</span>
+    `;
+
+    const container =
+      document.querySelector(".flash-container") || createFlashContainer();
+    container.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
+
+    notification.querySelector(".flash-close").onclick = () => {
+      notification.remove();
+    };
+  }
+
+  function createFlashContainer() {
+    const container = document.createElement("div");
+    container.className = "flash-container";
+    document.body.appendChild(container);
+    return container;
+  }
+
+  // Add CSS for animations if not present
+  if (!document.querySelector("#memory-animations")) {
+    const style = document.createElement("style");
+    style.id = "memory-animations";
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .memory-action-btn.saved {
+            color: var(--primary-color);
+        }
+    `;
+    document.head.appendChild(style);
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,795 @@
+{% extends "base.html" %} {% block title %}Dashboard - LunaLink{% endblock %} {%
+block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/dashboard.css') }}"
+/>
+<style>
+  /* Additional styles for modals */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-primary);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .close-btn:hover {
+    color: var(--primary-color);
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .form-input,
+  .form-textarea,
+  .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: inherit;
+  }
+
+  .form-input:focus,
+  .form-textarea:focus,
+  .form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 75, 110, 0.1);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    display: none;
+  }
+
+  .checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--text-secondary);
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+
+  .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-container">
+  <!-- Welcome Section -->
+  <div class="welcome-section">
+    <div class="welcome-content">
+      <h1>Welcome back, {{ current_user.name }}! 💖</h1>
+      <p class="welcome-subtitle">{{ today_quote }}</p>
+    </div>
+    <div class="quick-stats">
+      <div class="stat-card">
+        <i class="fas fa-heart"></i>
+        <div class="stat-info">
+          <h3>{{ relationship_days }}</h3>
+          <span>Relationship Days</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-fire"></i>
+        <div class="stat-info">
+          <h3>{{ streak.streak_count if streak else 0 }}</h3>
+          <span>Chat Streak</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-trophy"></i>
+        <div class="stat-info">
+          <h3>{{ streak.longest_streak if streak else 0 }}</h3>
+          <span>Longest Streak</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Grid -->
+  <div class="dashboard-grid">
+    <!-- Partner Info Card -->
+    <div class="dashboard-card partner-card">
+      <h2><i class="fas fa-user-heart"></i> Your Partner</h2>
+      {% if partner %}
+      <div class="partner-details">
+        <img
+          src="{{ url_for('static', filename='images/avatars/' + partner.avatar) }}"
+          alt="{{ partner.name }}"
+          class="partner-avatar-large"
+        />
+        <div class="partner-info">
+          <h3>{{ partner.name }}</h3>
+          <p class="partner-email">{{ partner.email }}</p>
+          <p class="partner-status">
+            <span
+              class="status-dot {% if partner.last_seen and (utcnow - partner.last_seen).total_seconds() < 300 %}online{% else %}offline{% endif %}"
+            ></span>
+            {% if partner.last_seen and (utcnow -
+            partner.last_seen).total_seconds() < 300 %} Online now {% else %}
+            Last seen {{ partner.last_seen.strftime('%H:%M') if
+            partner.last_seen else 'Never' }} {% endif %}
+          </p>
+          {% if partner.status_message %}
+          <p class="status-message">"{{ partner.status_message }}"</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="partner-actions">
+        <button
+          class="btn btn-primary"
+          onclick="location.href='{{ url_for('chat.chat_room') }}'"
+        >
+          <i class="fas fa-comments"></i> Start Chat
+        </button>
+        <button class="btn btn-secondary" onclick="sendVirtualHug()">
+          <i class="fas fa-heart"></i> Send Hug
+        </button>
+      </div>
+      {% else %}
+      <div class="no-partner">
+        <i class="fas fa-user-plus"></i>
+        <h3>No Partner Connected</h3>
+        <p>Invite your partner to join LunaLink</p>
+        <button class="btn btn-primary" onclick="invitePartner()">
+          <i class="fas fa-envelope"></i> Send Invitation
+        </button>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Upcoming Anniversaries -->
+    <div class="dashboard-card anniversaries-card">
+      <h2><i class="fas fa-calendar-heart"></i> Upcoming Anniversaries</h2>
+      {% if upcoming_anniversaries %}
+      <div class="anniversaries-list">
+        {% for anniv in upcoming_anniversaries %}
+        <div class="anniversary-item">
+          <div class="anniversary-date">
+            <span class="date-day">{{ anniv.next_date.strftime('%d') }}</span>
+            <span class="date-month">{{ anniv.next_date.strftime('%b') }}</span>
+          </div>
+          <div class="anniversary-details">
+            <h4>{{ anniv.title }}</h4>
+            <p>{{ anniv.days_until }} days to go</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-data">
+        <i class="fas fa-calendar-plus"></i>
+        <p>No upcoming anniversaries</p>
+        <button class="btn btn-secondary" onclick="showAddAnniversaryModal()">
+          Add Anniversary
+        </button>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Mood Tracker -->
+    <div class="dashboard-card mood-card">
+      <h2><i class="fas fa-smile"></i> How are you feeling?</h2>
+      <div class="mood-selector">
+        <button
+          class="mood-btn"
+          data-mood="Loved"
+          data-emoji="💖"
+          onclick="setMood('Loved', '💖')"
+        >
+          💖 Loved
+        </button>
+        <button
+          class="mood-btn"
+          data-mood="Happy"
+          data-emoji="😊"
+          onclick="setMood('Happy', '😊')"
+        >
+          😊 Happy
+        </button>
+        <button
+          class="mood-btn"
+          data-mood="Romantic"
+          data-emoji="🌹"
+          onclick="setMood('Romantic', '🌹')"
+        >
+          🌹 Romantic
+        </button>
+        <button
+          class="mood-btn"
+          data-mood="Missing"
+          data-emoji="💌"
+          onclick="setMood('Missing', '💌')"
+        >
+          💌 Missing You
+        </button>
+      </div>
+      {% if recent_moods %}
+      <div class="recent-moods">
+        <h4>Recent Moods</h4>
+        {% for mood in recent_moods %}
+        <div class="mood-item">
+          <span class="mood-emoji">{{ mood.emoji }}</span>
+          <span class="mood-text">{{ mood.mood_text }}</span>
+          <span class="mood-time">{{ mood.created_at.strftime('%H:%M') }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Quick Notes -->
+    <div class="dashboard-card notes-card">
+      <h2><i class="fas fa-sticky-note"></i> Shared Notes</h2>
+      <div class="notes-actions">
+        <button class="btn btn-primary" onclick="showAddNoteModal()">
+          <i class="fas fa-plus"></i> Add Note
+        </button>
+      </div>
+      {% if shared_notes %}
+      <div class="notes-list">
+        {% for note in shared_notes %}
+        <div class="note-item">
+          <h4>{{ note.title or 'Untitled Note' }}</h4>
+          <p class="note-preview">
+            {{ note.content[:100] }}{% if note.content|length > 100 %}...{%
+            endif %}
+          </p>
+          <div class="note-meta">
+            <span>{{ note.updated_at.strftime('%b %d') }}</span>
+            {% if note.is_shared %}
+            <span class="shared-badge">Shared</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-data">
+        <i class="fas fa-notes-medical"></i>
+        <p>No shared notes yet</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Memory Timeline -->
+    <div class="dashboard-card memories-card">
+      <h2><i class="fas fa-history"></i> Recent Memories</h2>
+      <div class="memories-actions">
+        <button
+          class="btn btn-secondary"
+          onclick="location.href='{{ url_for('dashboard.memories') }}'"
+        >
+          View All Memories
+        </button>
+      </div>
+      <div class="memories-preview">
+        <!-- Recent memories will be loaded via JavaScript -->
+        <div class="loading-memories">
+          <div class="loader"></div>
+          <p>Loading memories...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="dashboard-card actions-card">
+      <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+      <div class="action-buttons">
+        <button
+          class="action-btn large"
+          onclick="location.href='{{ url_for('chat.chat_room') }}'"
+        >
+          <i class="fas fa-comments"></i>
+          <span>Chat</span>
+        </button>
+        <button
+          class="action-btn large"
+          onclick="location.href='{{ url_for('dashboard.memories') }}'"
+        >
+          <i class="fas fa-images"></i>
+          <span>Memories</span>
+        </button>
+        <button
+          class="action-btn large"
+          onclick="location.href='{{ url_for('dashboard.notes') }}'"
+        >
+          <i class="fas fa-sticky-note"></i>
+          <span>Notes</span>
+        </button>
+        <button
+          class="action-btn large"
+          onclick="location.href='{{ url_for('dashboard.settings') }}'"
+        >
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Note Modal -->
+<div class="modal" id="addNoteModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Add New Note</h3>
+      <button class="close-btn" onclick="closeAddNoteModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="addNoteForm">
+        <div class="form-group">
+          <label class="form-label">Title (optional)</label>
+          <input
+            type="text"
+            class="form-input"
+            id="noteTitle"
+            placeholder="Note title..."
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Content</label>
+          <textarea
+            class="form-textarea"
+            id="noteContent"
+            rows="5"
+            placeholder="Write your note here..."
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="noteShared" checked />
+            <span class="checkmark"></span>
+            Share with partner
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="closeAddNoteModal()"
+      >
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" onclick="saveNote()">
+        Save Note
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Anniversary Modal -->
+<div class="modal" id="addAnniversaryModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Add Anniversary</h3>
+      <button class="close-btn" onclick="closeAddAnniversaryModal()">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="addAnniversaryForm">
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input
+            type="text"
+            class="form-input"
+            id="anniversaryTitle"
+            placeholder="e.g., First Date, Anniversary..."
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="anniversaryDate" required />
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="anniversaryRecurring" checked />
+            <span class="checkmark"></span>
+            Recurring every year
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="closeAddAnniversaryModal()"
+      >
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" onclick="saveAnniversary()">
+        Add Anniversary
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+  // Dashboard-specific functionality
+  function showAddNoteModal() {
+    console.log("Opening Add Note Modal");
+    document.getElementById("addNoteModal").style.display = "block";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeAddNoteModal() {
+    console.log("Closing Add Note Modal");
+    document.getElementById("addNoteModal").style.display = "none";
+    document.body.style.overflow = "auto";
+    document.getElementById("addNoteForm").reset();
+  }
+
+  function showAddAnniversaryModal() {
+    console.log("Opening Add Anniversary Modal");
+    document.getElementById("addAnniversaryModal").style.display = "block";
+    document.body.style.overflow = "hidden";
+
+    // Set default date to today
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("anniversaryDate").value = today;
+  }
+
+  function closeAddAnniversaryModal() {
+    console.log("Closing Add Anniversary Modal");
+    document.getElementById("addAnniversaryModal").style.display = "none";
+    document.body.style.overflow = "auto";
+    document.getElementById("addAnniversaryForm").reset();
+  }
+
+  function saveNote() {
+    const title = document.getElementById("noteTitle").value;
+    const content = document.getElementById("noteContent").value;
+    const isShared = document.getElementById("noteShared").checked;
+
+    if (!content.trim()) {
+      showNotification("Note content cannot be empty", "error");
+      return;
+    }
+
+    const saveBtn = document.querySelector("#addNoteModal .btn-primary");
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
+
+    fetch("/dashboard/add-note", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: title,
+        content: content,
+        is_shared: isShared,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("Note added successfully! 📝", "success");
+          closeAddNoteModal();
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showNotification(data.error || "Error adding note", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error adding note:", error);
+        showNotification("Error adding note", "error");
+      })
+      .finally(() => {
+        saveBtn.innerHTML = "Save Note";
+        saveBtn.disabled = false;
+      });
+  }
+
+  function saveAnniversary() {
+    const title = document.getElementById("anniversaryTitle").value;
+    const date = document.getElementById("anniversaryDate").value;
+    const recurring = document.getElementById("anniversaryRecurring").checked;
+
+    if (!title || !date) {
+      showNotification("Please fill in all fields", "error");
+      return;
+    }
+
+    const saveBtn = document.querySelector("#addAnniversaryModal .btn-primary");
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
+
+    fetch("/dashboard/add-anniversary", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: title,
+        date: date,
+        recurring: recurring,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("Anniversary added! 📅", "success");
+          closeAddAnniversaryModal();
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showNotification(data.error || "Error adding anniversary", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error adding anniversary:", error);
+        showNotification("Error adding anniversary", "error");
+      })
+      .finally(() => {
+        saveBtn.innerHTML = "Add Anniversary";
+        saveBtn.disabled = false;
+      });
+  }
+
+  function invitePartner() {
+    const email = prompt("Enter your partner's email address:");
+    if (email && email.includes("@")) {
+      showNotification("Sending invitation...", "info");
+
+      fetch("/auth/invite-partner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            showNotification("Invitation sent successfully!", "success");
+          } else {
+            showNotification(data.error || "Error sending invitation", "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error sending invitation:", error);
+          showNotification("Error sending invitation", "error");
+        });
+    } else if (email) {
+      showNotification("Please enter a valid email address", "error");
+    }
+  }
+
+  function sendVirtualHug() {
+    fetch("/dashboard/virtual-hug", {
+      method: "POST",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification(data.message, "success");
+          createFloatingHearts();
+        } else {
+          showNotification(data.error, "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error sending virtual hug:", error);
+        showNotification("Error sending virtual hug", "error");
+      });
+  }
+
+  function createFloatingHearts() {
+    for (let i = 0; i < 15; i++) {
+      setTimeout(() => {
+        createFloatingHeart();
+      }, i * 100);
+    }
+  }
+
+  function createFloatingHeart() {
+    const heart = document.createElement("div");
+    heart.innerHTML = "💖";
+    heart.style.position = "fixed";
+    heart.style.fontSize = Math.random() * 24 + 16 + "px";
+    heart.style.left = Math.random() * 100 + "vw";
+    heart.style.top = "100vh";
+    heart.style.zIndex = "10000";
+    heart.style.pointerEvents = "none";
+    heart.style.animation = `floatUp ${
+      Math.random() * 3 + 2
+    }s ease-in forwards`;
+    heart.style.opacity = "0.8";
+
+    document.body.appendChild(heart);
+
+    setTimeout(() => {
+      if (heart.parentElement) {
+        heart.remove();
+      }
+    }, 5000);
+  }
+
+  function showNotification(message, type) {
+    const notification = document.createElement("div");
+    notification.className = `flash-message ${type}`;
+    notification.innerHTML = `
+        ${message}
+        <span class="flash-close">&times;</span>
+    `;
+
+    const container =
+      document.querySelector(".flash-container") || createFlashContainer();
+    container.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
+
+    notification.querySelector(".flash-close").onclick = () => {
+      notification.remove();
+    };
+  }
+
+  function createFlashContainer() {
+    const container = document.createElement("div");
+    container.className = "flash-container";
+    document.body.appendChild(container);
+    return container;
+  }
+
+  // Close modals when clicking outside
+  document.addEventListener("click", function (event) {
+    const modals = document.querySelectorAll(".modal");
+    modals.forEach((modal) => {
+      if (event.target === modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+      }
+    });
+  });
+
+  // Close modals on ESC key
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      const modals = document.querySelectorAll(".modal");
+      modals.forEach((modal) => {
+        if (modal.style.display === "block") {
+          modal.style.display = "none";
+          document.body.style.overflow = "auto";
+        }
+      });
+    }
+  });
+
+  // Add CSS for floating animation
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes floatUp {
+        0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0.8;
+        }
+        50% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+`;
+  document.head.appendChild(style);
+
+  // Initialize dashboard
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Dashboard initialized");
+
+    // Test modal functionality
+    console.log(
+      "Add Note Modal element:",
+      document.getElementById("addNoteModal")
+    );
+    console.log(
+      "Add Anniversary Modal element:",
+      document.getElementById("addAnniversaryModal")
+    );
+  });
+</script>
+{% endblock %}

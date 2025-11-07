@@ -1,0 +1,884 @@
+{% extends "base.html" %} {% block title %}Profile - LunaLink{% endblock %} {%
+block extra_css %}
+<style>
+  .profile-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .profile-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .profile-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+
+  .profile-title i {
+    color: var(--primary-color);
+    font-size: 2rem;
+  }
+
+  .profile-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .profile-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+  }
+
+  /* Profile Sidebar */
+  .profile-sidebar {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .avatar-section {
+    margin-bottom: 2rem;
+  }
+
+  .avatar-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  .profile-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 4px solid var(--primary-color);
+    object-fit: cover;
+    box-shadow: 0 8px 25px rgba(255, 75, 110, 0.3);
+  }
+
+  .avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+  }
+
+  .avatar-container:hover .avatar-overlay {
+    opacity: 1;
+  }
+
+  .avatar-overlay i {
+    color: white;
+    font-size: 1.5rem;
+  }
+
+  .avatar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .avatar-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+
+  .avatar-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  .profile-stats {
+    margin-top: 2rem;
+  }
+
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .stat-item:last-child {
+    border-bottom: none;
+  }
+
+  .stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .stat-value {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* Profile Form */
+  .profile-form-section {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .section-title {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-title i {
+    color: var(--primary-color);
+  }
+
+  .profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .form-input,
+  .form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: inherit;
+  }
+
+  .form-input:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 75, 110, 0.1);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .readonly-input {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Partner Section */
+  .partner-section {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .partner-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .partner-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .partner-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+  }
+
+  .partner-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+  }
+
+  .partner-email {
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .partner-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4caf50;
+    animation: pulse 2s infinite;
+  }
+
+  .no-partner {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+  }
+
+  .no-partner i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+  }
+
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-primary);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .close-btn:hover {
+    color: var(--primary-color);
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .profile-container {
+      padding: 1rem;
+    }
+
+    .profile-content {
+      grid-template-columns: 1fr;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+
+    .partner-content {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .profile-sidebar,
+    .profile-form-section,
+    .partner-section {
+      padding: 1.5rem;
+    }
+
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="profile-container">
+  <div class="profile-header">
+    <div class="profile-title">
+      <i class="fas fa-user-circle"></i>
+      <h1>Your Profile</h1>
+    </div>
+    <p class="profile-subtitle">
+      Manage your personal information and preferences
+    </p>
+  </div>
+
+  <div class="profile-content">
+    <!-- Profile Sidebar -->
+    <div class="profile-sidebar">
+      <div class="avatar-section">
+        <div class="avatar-container">
+          <img
+            src="{{ url_for('static', filename='images/avatars/' + current_user.avatar) }}"
+            alt="{{ current_user.name }}"
+            class="profile-avatar"
+            id="profileAvatar"
+          />
+          <div
+            class="avatar-overlay"
+            onclick="document.getElementById('avatarInput').click()"
+          >
+            <i class="fas fa-camera"></i>
+          </div>
+        </div>
+        <h3>{{ current_user.name }}</h3>
+        <p class="text-muted">{{ current_user.email }}</p>
+
+        <div class="avatar-actions">
+          <button
+            class="avatar-btn"
+            onclick="document.getElementById('avatarInput').click()"
+          >
+            <i class="fas fa-upload"></i> Change Photo
+          </button>
+          <button class="avatar-btn" onclick="resetAvatar()">
+            <i class="fas fa-redo"></i> Reset to Default
+          </button>
+        </div>
+
+        <input
+          type="file"
+          id="avatarInput"
+          accept="image/*"
+          style="display: none"
+          onchange="handleAvatarUpload(this.files[0])"
+        />
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat-item">
+          <span class="stat-label">Member Since</span>
+          <span class="stat-value"
+            >{{ current_user.created_at.strftime('%b %Y') }}</span
+          >
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Last Login</span>
+          <span class="stat-value">
+            {% if current_user.last_login %} {{
+            current_user.last_login.strftime('%b %d') }} {% else %} Never {%
+            endif %}
+          </span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Status</span>
+          <span class="stat-value">
+            {% if current_user.is_verified %}
+            <span style="color: #4caf50">Verified</span>
+            {% else %}
+            <span style="color: #ff9800">Pending</span>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Form -->
+    <div class="profile-form-section">
+      <h2 class="section-title">
+        <i class="fas fa-user-edit"></i>
+        Personal Information
+      </h2>
+
+      <form class="profile-form" id="profileForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="form-input"
+              value="{{ current_user.name }}"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input readonly-input"
+              value="{{ current_user.email }}"
+              readonly
+            />
+            <small style="color: var(--text-secondary); font-size: 0.8rem">
+              Email cannot be changed
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="statusMessage">Status Message</label>
+          <textarea
+            id="statusMessage"
+            name="status_message"
+            class="form-textarea"
+            placeholder="How are you feeling today?"
+          >
+{{ current_user.status_message or '' }}</textarea
+          >
+          <small style="color: var(--text-secondary); font-size: 0.8rem">
+            This will be visible to your partner
+          </small>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="resetForm()">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Partner Section -->
+  <div class="partner-section">
+    <div class="partner-header">
+      <h2 class="section-title">
+        <i class="fas fa-user-heart"></i>
+        Your Partner
+      </h2>
+    </div>
+
+    {% if current_user.partner %}
+    <div class="partner-content">
+      <img
+        src="{{ url_for('static', filename='images/avatars/' + current_user.partner.avatar) }}"
+        alt="{{ current_user.partner.name }}"
+        class="partner-avatar"
+      />
+      <div class="partner-info">
+        <h3>{{ current_user.partner.name }}</h3>
+        <p class="partner-email">{{ current_user.partner.email }}</p>
+        <div class="partner-status">
+          <span class="status-dot"></span>
+          {% if current_user.partner.last_seen and (utcnow -
+          current_user.partner.last_seen).total_seconds() < 300 %} Online now {%
+          else %} Last seen {{ current_user.partner.last_seen.strftime('%H:%M')
+          if current_user.partner.last_seen else 'Never' }} {% endif %}
+        </div>
+        {% if current_user.partner.status_message %}
+        <p
+          style="
+            margin-top: 0.5rem;
+            font-style: italic;
+            color: var(--accent-color);
+          "
+        >
+          "{{ current_user.partner.status_message }}"
+        </p>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="no-partner">
+      <i class="fas fa-user-plus"></i>
+      <h3>No Partner Connected</h3>
+      <p>
+        Invite your partner to join LunaLink and start your journey together!
+      </p>
+      <button class="btn btn-primary" onclick="invitePartner()">
+        <i class="fas fa-envelope"></i> Send Invitation
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Avatar Crop Modal -->
+<div class="modal" id="avatarCropModal" style="display: none">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Crop Your Avatar</h3>
+      <button class="close-btn" onclick="closeCropModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="cropContainer" style="max-width: 400px; margin: 0 auto">
+        <!-- Cropper will be initialized here -->
+        <p style="text-align: center; color: var(--text-secondary)">
+          Avatar cropping functionality will be implemented here.
+        </p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeCropModal()">
+        Cancel
+      </button>
+      <button class="btn btn-primary" onclick="saveCroppedAvatar()">
+        Save Avatar
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let originalFormData = {};
+
+  // Initialize form data
+  document.addEventListener("DOMContentLoaded", function () {
+    // Store original form values
+    originalFormData = {
+      name: document.getElementById("name").value,
+      statusMessage: document.getElementById("statusMessage").value,
+    };
+
+    // Initialize form submission
+    document
+      .getElementById("profileForm")
+      .addEventListener("submit", saveProfile);
+  });
+
+  function handleAvatarUpload(file) {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showNotification("Please select an image file", "error");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB limit
+      showNotification("Image size should be less than 5MB", "error");
+      return;
+    }
+
+    // Show loading state
+    showNotification("Uploading avatar...", "info");
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    fetch("/dashboard/update-profile", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Update avatar preview
+          document.getElementById("profileAvatar").src =
+            data.avatar_url + "?t=" + new Date().getTime();
+          showNotification("Avatar updated successfully!", "success");
+        } else {
+          showNotification(data.error || "Error updating avatar", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error uploading avatar:", error);
+        showNotification("Error uploading avatar", "error");
+      });
+  }
+
+  function resetAvatar() {
+    if (confirm("Reset to default avatar?")) {
+      fetch("/dashboard/reset-avatar", {
+        method: "POST",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            document.getElementById("profileAvatar").src =
+              data.avatar_url + "?t=" + new Date().getTime();
+            showNotification("Avatar reset to default", "success");
+          } else {
+            showNotification("Error resetting avatar", "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error resetting avatar:", error);
+          showNotification("Error resetting avatar", "error");
+        });
+    }
+  }
+
+  function saveProfile(event) {
+    event.preventDefault();
+
+    const formData = {
+      name: document.getElementById("name").value,
+      status_message: document.getElementById("statusMessage").value,
+    };
+
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
+
+    fetch("/dashboard/update-profile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("Profile updated successfully!", "success");
+          // Update original form data
+          originalFormData = { ...formData };
+        } else {
+          showNotification(data.error || "Error updating profile", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating profile:", error);
+        showNotification("Error updating profile", "error");
+      })
+      .finally(() => {
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        submitBtn.disabled = false;
+      });
+  }
+
+  function resetForm() {
+    if (confirm("Reset all changes?")) {
+      document.getElementById("name").value = originalFormData.name;
+      document.getElementById("statusMessage").value =
+        originalFormData.statusMessage;
+      showNotification("Form reset", "info");
+    }
+  }
+
+  function invitePartner() {
+    const email = prompt("Enter your partner's email address:");
+    if (email && email.includes("@")) {
+      showNotification("Sending invitation...", "info");
+
+      fetch("/auth/invite-partner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            showNotification("Invitation sent successfully!", "success");
+          } else {
+            showNotification(data.error || "Error sending invitation", "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error sending invitation:", error);
+          showNotification("Error sending invitation", "error");
+        });
+    } else if (email) {
+      showNotification("Please enter a valid email address", "error");
+    }
+  }
+
+  function closeCropModal() {
+    document.getElementById("avatarCropModal").style.display = "none";
+    document.body.style.overflow = "auto";
+  }
+
+  function saveCroppedAvatar() {
+    // This would handle the cropped avatar saving
+    showNotification("Avatar cropping feature coming soon!", "info");
+    closeCropModal();
+  }
+
+  function showNotification(message, type) {
+    const notification = document.createElement("div");
+    notification.className = `flash-message ${type}`;
+    notification.innerHTML = `
+        ${message}
+        <span class="flash-close">&times;</span>
+    `;
+
+    const container =
+      document.querySelector(".flash-container") || createFlashContainer();
+    container.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
+
+    notification.querySelector(".flash-close").onclick = () => {
+      notification.remove();
+    };
+  }
+
+  function createFlashContainer() {
+    const container = document.createElement("div");
+    container.className = "flash-container";
+    document.body.appendChild(container);
+    return container;
+  }
+
+  // Add form change detection
+  document.getElementById("profileForm").addEventListener("input", function () {
+    const currentData = {
+      name: document.getElementById("name").value,
+      statusMessage: document.getElementById("statusMessage").value,
+    };
+
+    const hasChanges =
+      currentData.name !== originalFormData.name ||
+      currentData.statusMessage !== originalFormData.statusMessage;
+
+    const saveBtn = document.querySelector('button[type="submit"]');
+    if (hasChanges) {
+      saveBtn.classList.add("pulse");
+    } else {
+      saveBtn.classList.remove("pulse");
+    }
+  });
+
+  // Close modal when clicking outside
+  document.addEventListener("click", function (event) {
+    if (event.target === document.getElementById("avatarCropModal")) {
+      closeCropModal();
+    }
+  });
+
+  // Close modal on ESC key
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      closeCropModal();
+    }
+  });
+
+  // Add CSS for pulse animation
+  const style = document.createElement("style");
+  style.textContent = `
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .text-muted {
+        color: var(--text-secondary) !important;
+    }
+`;
+  document.head.appendChild(style);
+</script>
+{% endblock %}
