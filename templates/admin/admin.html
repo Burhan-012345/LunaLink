@@ -1,0 +1,950 @@
+{% extends "base.html" %} {% block title %}Admin Dashboard - LunaLink{% endblock
+%} {% block extra_css %}
+<style>
+  .admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .admin-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-primary);
+  }
+
+  .admin-title i {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+  }
+
+  .admin-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 15px;
+    text-align: center;
+    border-left: 4px solid var(--primary-color);
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-change {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .stat-change.positive {
+    color: #4caf50;
+  }
+
+  .stat-change.negative {
+    color: #f44336;
+  }
+
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+
+  .admin-section {
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .section-title {
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-title i {
+    color: var(--primary-color);
+  }
+
+  .section-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .section-action-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .section-action-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  /* Tables */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .data-table th {
+    color: var(--text-primary);
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .data-table td {
+    color: var(--text-secondary);
+  }
+
+  .data-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+
+  .status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  .status-active {
+    background: #4caf50;
+    color: white;
+  }
+
+  .status-inactive {
+    background: #f44336;
+    color: white;
+  }
+
+  .status-pending {
+    background: #ff9800;
+    color: white;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .action-btn:hover {
+    color: var(--primary-color);
+    background: rgba(255, 75, 110, 0.1);
+  }
+
+  /* Charts */
+  .chart-container {
+    background: var(--bg-primary);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+  }
+
+  .chart-placeholder {
+    text-align: center;
+  }
+
+  .chart-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+  }
+
+  /* Quick Actions */
+  .quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .quick-action-btn {
+    background: var(--bg-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .quick-action-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+  }
+
+  .quick-action-btn i {
+    font-size: 1.5rem;
+  }
+
+  .quick-action-btn span {
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  /* System Info */
+  .system-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .system-info-item {
+    background: var(--bg-primary);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .system-info-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .system-info-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .system-info-value.good {
+    color: #4caf50;
+  }
+
+  .system-info-value.warning {
+    color: #ff9800;
+  }
+
+  .system-info-value.critical {
+    color: #f44336;
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .pagination-btn {
+    background: var(--bg-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .pagination-btn:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .pagination-info {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .admin-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .admin-container {
+      padding: 1rem;
+    }
+
+    .admin-header {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .admin-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .data-table {
+      font-size: 0.8rem;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 0.5rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-actions-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .system-info {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="admin-container">
+  <div class="admin-header">
+    <div class="admin-title">
+      <i class="fas fa-shield-alt"></i>
+      <h1>Admin Dashboard</h1>
+    </div>
+
+    <div class="admin-actions">
+      <button class="btn btn-secondary" onclick="refreshData()">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+      <button class="btn btn-primary" onclick="exportData()">
+        <i class="fas fa-download"></i> Export Data
+      </button>
+      <button class="btn btn-danger" onclick="backupDatabase()">
+        <i class="fas fa-database"></i> Backup
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">{{ total_users }}</div>
+      <div class="stat-label">Total Users</div>
+      <div class="stat-change positive">+12% this month</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-number">{{ total_messages }}</div>
+      <div class="stat-label">Messages Sent</div>
+      <div class="stat-change positive">+8% today</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-number">{{ total_media }}</div>
+      <div class="stat-label">Media Files</div>
+      <div class="stat-change positive">+15% this week</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-number">{{ today_messages }}</div>
+      <div class="stat-label">Messages Today</div>
+      <div class="stat-change positive">Active</div>
+    </div>
+  </div>
+
+  <div class="admin-grid">
+    <!-- Left Column -->
+    <div>
+      <!-- Recent Users Section -->
+      <div class="admin-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-users"></i>
+            Recent Users
+          </h2>
+          <div class="section-actions">
+            <button
+              class="section-action-btn"
+              onclick="viewAllUsers()"
+              title="View All"
+            >
+              <i class="fas fa-list"></i>
+            </button>
+            <button
+              class="section-action-btn"
+              onclick="exportUsers()"
+              title="Export"
+            >
+              <i class="fas fa-download"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in recent_users %}
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center">
+                    <img
+                      src="{{ url_for('static', filename='images/avatars/' + user.avatar) }}"
+                      alt="{{ user.name }}"
+                      class="user-avatar"
+                    />
+                    {{ user.name }}
+                  </div>
+                </td>
+                <td>{{ user.email }}</td>
+                <td>
+                  {% if user.is_verified %}
+                  <span class="status-badge status-active">Verified</span>
+                  {% else %}
+                  <span class="status-badge status-pending">Pending</span>
+                  {% endif %}
+                </td>
+                <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      class="action-btn"
+                      onclick="viewUser({{ user.id }})"
+                      title="View"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      class="action-btn"
+                      onclick="editUser({{ user.id }})"
+                      title="Edit"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      class="action-btn"
+                      onclick="deleteUser({{ user.id }})"
+                      title="Delete"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Messages Section -->
+      <div class="admin-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-comments"></i>
+            Recent Messages
+          </h2>
+          <div class="section-actions">
+            <button
+              class="section-action-btn"
+              onclick="viewAllMessages()"
+              title="View All"
+            >
+              <i class="fas fa-list"></i>
+            </button>
+            <button
+              class="section-action-btn"
+              onclick="exportMessages()"
+              title="Export"
+            >
+              <i class="fas fa-download"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Message</th>
+                <th>Type</th>
+                <th>Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for message in recent_messages %}
+              <tr>
+                <td>{{ message.sender.name }}</td>
+                <td>{{ message.receiver.name }}</td>
+                <td>
+                  {% if message.message_type == 'text' %} {{
+                  message.content|truncate(30) }} {% else %}
+                  <i
+                    class="fas fa-{{ 'image' if message.message_type == 'image' else 'video' if message.message_type == 'video' else 'microphone' }}"
+                  ></i>
+                  {{ message.message_type|title }} {% endif %}
+                </td>
+                <td>
+                  <span
+                    class="status-badge {% if message.message_type == 'text' %}status-active{% else %}status-pending{% endif %}"
+                  >
+                    {{ message.message_type|title }}
+                  </span>
+                </td>
+                <td>{{ message.timestamp.strftime('%H:%M') }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      class="action-btn"
+                      onclick="viewMessage({{ message.id }})"
+                      title="View"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      class="action-btn"
+                      onclick="deleteMessage({{ message.id }})"
+                      title="Delete"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <button class="pagination-btn" onclick="previousPage()">
+            <i class="fas fa-chevron-left"></i> Previous
+          </button>
+          <span class="pagination-info">Page 1 of 5</span>
+          <button class="pagination-btn" onclick="nextPage()">
+            Next <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div>
+      <!-- Quick Actions -->
+      <div class="admin-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-bolt"></i>
+            Quick Actions
+          </h2>
+        </div>
+
+        <div class="quick-actions-grid">
+          <a href="/admin/users" class="quick-action-btn">
+            <i class="fas fa-user-cog"></i>
+            <span>Manage Users</span>
+          </a>
+          <a href="/admin/messages" class="quick-action-btn">
+            <i class="fas fa-envelope"></i>
+            <span>View Messages</span>
+          </a>
+          <button class="quick-action-btn" onclick="systemHealth()">
+            <i class="fas fa-heartbeat"></i>
+            <span>System Health</span>
+          </button>
+          <button class="quick-action-btn" onclick="clearCache()">
+            <i class="fas fa-broom"></i>
+            <span>Clear Cache</span>
+          </button>
+          <button class="quick-action-btn" onclick="viewLogs()">
+            <i class="fas fa-file-alt"></i>
+            <span>View Logs</span>
+          </button>
+          <button class="quick-action-btn" onclick="sendAnnouncement()">
+            <i class="fas fa-bullhorn"></i>
+            <span>Announcement</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- System Information -->
+      <div class="admin-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-server"></i>
+            System Info
+          </h2>
+        </div>
+
+        <div class="system-info">
+          <div class="system-info-item">
+            <div class="system-info-label">CPU Usage</div>
+            <div class="system-info-value good">24%</div>
+          </div>
+          <div class="system-info-item">
+            <div class="system-info-label">Memory</div>
+            <div class="system-info-value warning">68%</div>
+          </div>
+          <div class="system-info-item">
+            <div class="system-info-label">Disk Space</div>
+            <div class="system-info-value good">42%</div>
+          </div>
+          <div class="system-info-item">
+            <div class="system-info-label">Uptime</div>
+            <div class="system-info-value">12 days</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Chart -->
+      <div class="admin-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-chart-line"></i>
+            Activity Overview
+          </h2>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-placeholder">
+            <i class="fas fa-chart-bar"></i>
+            <p>Activity chart will be displayed here</p>
+            <small>Real-time monitoring coming soon</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals will be added here for various actions -->
+{% endblock %} {% block extra_js %}
+<script>
+  // Admin dashboard functionality
+  function refreshData() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    btn.disabled = true;
+
+    // Simulate API call
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
+  }
+
+  function exportData() {
+    showNotification("Preparing data export...", "info");
+
+    // In real implementation, this would trigger a download
+    setTimeout(() => {
+      showNotification("Data exported successfully!", "success");
+    }, 2000);
+  }
+
+  function backupDatabase() {
+    showNotification("Starting database backup...", "info");
+
+    fetch("/admin/backup")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification(`Backup created: ${data.backup_file}`, "success");
+        } else {
+          showNotification("Backup failed", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Backup error:", error);
+        showNotification("Backup failed", "error");
+      });
+  }
+
+  function viewAllUsers() {
+    window.location.href = "/admin/users";
+  }
+
+  function viewAllMessages() {
+    window.location.href = "/admin/messages";
+  }
+
+  function viewUser(userId) {
+    showNotification(`Viewing user ${userId}`, "info");
+    // In real implementation, open user details modal
+  }
+
+  function editUser(userId) {
+    showNotification(`Editing user ${userId}`, "info");
+    // In real implementation, open user edit modal
+  }
+
+  function deleteUser(userId) {
+    if (
+      confirm(
+        "Are you sure you want to delete this user? This action cannot be undone."
+      )
+    ) {
+      showNotification(`Deleting user ${userId}...`, "warning");
+
+      // In real implementation, call delete API
+      setTimeout(() => {
+        showNotification("User deleted successfully", "success");
+        location.reload();
+      }, 1000);
+    }
+  }
+
+  function viewMessage(messageId) {
+    showNotification(`Viewing message ${messageId}`, "info");
+    // In real implementation, open message details modal
+  }
+
+  function deleteMessage(messageId) {
+    if (confirm("Are you sure you want to delete this message?")) {
+      showNotification(`Deleting message ${messageId}...`, "warning");
+
+      // In real implementation, call delete API
+      setTimeout(() => {
+        showNotification("Message deleted successfully", "success");
+        location.reload();
+      }, 1000);
+    }
+  }
+
+  function systemHealth() {
+    showNotification("Checking system health...", "info");
+
+    fetch("/admin/system-health")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.healthy) {
+          showNotification("System is healthy! 🟢", "success");
+        } else {
+          showNotification("System issues detected 🔴", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Health check error:", error);
+        showNotification("Health check failed", "error");
+      });
+  }
+
+  function clearCache() {
+    showNotification("Clearing cache...", "info");
+
+    fetch("/admin/clear-cache")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("Cache cleared successfully!", "success");
+        } else {
+          showNotification("Cache clearance failed", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Cache clearance error:", error);
+        showNotification("Cache clearance failed", "error");
+      });
+  }
+
+  function viewLogs() {
+    showNotification("Opening logs...", "info");
+    window.open("/admin/logs", "_blank");
+  }
+
+  function sendAnnouncement() {
+    const message = prompt("Enter announcement message:");
+    if (message) {
+      showNotification("Sending announcement...", "info");
+
+      fetch("/admin/send-announcement", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: message }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            showNotification("Announcement sent successfully!", "success");
+          } else {
+            showNotification("Failed to send announcement", "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Announcement error:", error);
+          showNotification("Failed to send announcement", "error");
+        });
+    }
+  }
+
+  function previousPage() {
+    showNotification("Loading previous page...", "info");
+    // Implement pagination
+  }
+
+  function nextPage() {
+    showNotification("Loading next page...", "info");
+    // Implement pagination
+  }
+
+  function exportUsers() {
+    showNotification("Exporting users data...", "info");
+    // Implement export functionality
+  }
+
+  function exportMessages() {
+    showNotification("Exporting messages data...", "info");
+    // Implement export functionality
+  }
+
+  function showNotification(message, type) {
+    const notification = document.createElement("div");
+    notification.className = `flash-message ${type}`;
+    notification.innerHTML = `
+        ${message}
+        <span class="flash-close">&times;</span>
+    `;
+
+    const container =
+      document.querySelector(".flash-container") || createFlashContainer();
+    container.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
+
+    notification.querySelector(".flash-close").onclick = () => {
+      notification.remove();
+    };
+  }
+
+  function createFlashContainer() {
+    const container = document.createElement("div");
+    container.className = "flash-container";
+    document.body.appendChild(container);
+    return container;
+  }
+
+  // Auto-refresh data every 5 minutes
+  setInterval(() => {
+    console.log("Auto-refreshing admin data...");
+    // In real implementation, you might want to refresh specific components
+  }, 300000);
+
+  // Initialize admin dashboard
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Admin dashboard initialized");
+  });
+</script>
+{% endblock %}
