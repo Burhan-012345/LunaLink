@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}LunaLink - A Private Space for Two 💞{% endblock %}
+    </title>
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='images/icons/favicon.ico') }}"
+    />
+
+    <!-- Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Floating Hearts Background -->
+    <div class="floating-hearts">
+      {% for i in range(15) %}
+      <div class="heart" style="--i: {{ i }};"></div>
+      {% endfor %}
+    </div>
+
+    <!-- Navigation -->
+    {% if current_user.is_authenticated %}
+    <nav class="navbar">
+      <div class="nav-brand">
+        <i class="fas fa-moon"></i>
+        <span>LunaLink</span>
+      </div>
+      <div class="nav-links">
+        <a href="{{ url_for('index') }}" class="nav-link">
+          <i class="fas fa-home"></i> Home
+        </a>
+        <a href="{{ url_for('chat.chat_room') }}" class="nav-link">
+          <i class="fas fa-comments"></i> Chat
+        </a>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="nav-link">
+          <i class="fas fa-heart"></i> Dashboard
+        </a>
+        <!-- In the nav-links section -->
+        <a href="{{ url_for('dashboard.profile') }}" class="nav-link">
+          <i class="fas fa-user"></i> Profile
+        </a>
+        <a href="{{ url_for('dashboard.settings') }}" class="nav-link">
+          <i class="fas fa-cog"></i> Settings
+        </a>
+        <div class="user-menu">
+          <img
+            src="{{ url_for('static', filename='images/avatars/' + current_user.avatar) }}"
+            alt="{{ current_user.name }}"
+            class="user-avatar"
+          />
+          <span>{{ current_user.name }}</span>
+          <div class="dropdown-menu">
+            <a href="{{ url_for('dashboard.profile') }}">Profile</a>
+            <a href="{{ url_for('dashboard.settings') }}">Settings</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="flash-message {{ category }}">
+        {{ message }}
+        <span class="flash-close">&times;</span>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">{% block content %}{% endblock %}</main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>&copy; 2024 LunaLink. Connecting hearts, one link at a time 🌙💫</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+      // Flash message close functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const flashClose = document.querySelectorAll(".flash-close");
+        flashClose.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            this.parentElement.style.display = "none";
+          });
+        });
+
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(() => {
+          const flashMessages = document.querySelectorAll(".flash-message");
+          flashMessages.forEach((msg) => {
+            msg.style.display = "none";
+          });
+        }, 5000);
+      });
+    </script>
+  </body>
+</html>

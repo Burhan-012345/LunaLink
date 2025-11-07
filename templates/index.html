@@ -1,0 +1,557 @@
+{% extends "base.html" %} {% block title %}LunaLink - A Private Space for Two
+💞{% endblock %} {% block extra_css %}
+<style>
+  .hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 2rem;
+  }
+
+  .hero-title {
+    font-family: "Great Vibes", cursive;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: fadeInUp 1s ease;
+  }
+
+  .hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    animation: fadeInUp 1s ease 0.2s both;
+  }
+
+  .hero-description {
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+    line-height: 1.6;
+    opacity: 0.8;
+    animation: fadeInUp 1s ease 0.4s both;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 1s ease 0.6s both;
+  }
+
+  .hero-btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .hero-btn.primary {
+    background: #ff4b6e;
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 75, 110, 0.4);
+  }
+
+  .hero-btn.primary:hover {
+    background: #8a2be2;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+  }
+
+  .hero-btn.secondary {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+  }
+
+  .hero-btn.secondary:hover {
+    background: white;
+    color: #667eea;
+    transform: translateY(-3px);
+  }
+
+  .features-section {
+    padding: 5rem 2rem;
+    background: var(--bg-primary);
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+
+  .section-subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 4rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .feature-card {
+    background: var(--bg-secondary);
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .feature-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+  }
+
+  .feature-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+
+  .feature-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .cta-section {
+    padding: 5rem 2rem;
+    background: linear-gradient(135deg, #ff4b6e 0%, #8a2be2 100%);
+    color: white;
+    text-align: center;
+  }
+
+  .cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .cta-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .cta-description {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+
+  .testimonials-section {
+    padding: 5rem 2rem;
+    background: var(--bg-secondary);
+  }
+
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .testimonial-card {
+    background: var(--bg-primary);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--primary-color);
+  }
+
+  .testimonial-text {
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+  }
+
+  .author-info h4 {
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .author-info p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .floating-element {
+    position: absolute;
+    opacity: 0.1;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .floating-element.heart {
+    color: #ff4b6e;
+  }
+  .floating-element.moon {
+    color: #8a2be2;
+  }
+  .floating-element.star {
+    color: #ffd700;
+  }
+
+  .floating-element:nth-child(1) {
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+  .floating-element:nth-child(2) {
+    top: 20%;
+    right: 15%;
+    animation-delay: 1s;
+  }
+  .floating-element:nth-child(3) {
+    bottom: 30%;
+    left: 20%;
+    animation-delay: 2s;
+  }
+  .floating-element:nth-child(4) {
+    bottom: 20%;
+    right: 25%;
+    animation-delay: 3s;
+  }
+  .floating-element:nth-child(5) {
+    top: 40%;
+    left: 30%;
+    animation-delay: 4s;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(180deg);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 3rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.2rem;
+    }
+
+    .hero-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-btn {
+      width: 200px;
+      justify-content: center;
+    }
+
+    .features-grid,
+    .testimonials-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+    }
+
+    .feature-card,
+    .testimonial-card {
+      padding: 1.5rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="floating-elements">
+    <div class="floating-element heart">💖</div>
+    <div class="floating-element moon">🌙</div>
+    <div class="floating-element star">⭐</div>
+    <div class="floating-element heart">💕</div>
+    <div class="floating-element star">✨</div>
+  </div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">LunaLink</h1>
+    <p class="hero-subtitle">A Private Space for Two 💞</p>
+    <p class="hero-description">
+      Create your intimate digital sanctuary where love blossoms in complete
+      privacy. Share moments, build memories, and strengthen your bond in a
+      secure, beautiful environment designed exclusively for couples.
+    </p>
+
+    <div class="hero-buttons">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard.dashboard') }}" class="hero-btn primary">
+        <i class="fas fa-heart"></i> Go to Dashboard
+      </a>
+      {% else %}
+      <a href="{{ url_for('auth.signup') }}" class="hero-btn primary">
+        <i class="fas fa-user-plus"></i> Start Free
+      </a>
+      <a href="{{ url_for('auth.login') }}" class="hero-btn secondary">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+  <h2 class="section-title">Why Choose LunaLink?</h2>
+  <p class="section-subtitle">
+    Designed with love, built for privacy, and crafted for your relationship
+  </p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h3 class="feature-title">Military-Grade Security</h3>
+      <p class="feature-description">
+        End-to-end encryption ensures your conversations and media remain
+        private. Your love story is for your eyes only.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-comments"></i>
+      </div>
+      <h3 class="feature-title">Real-time Chat</h3>
+      <p class="feature-description">
+        Instant messaging with beautiful themes, media sharing, and romantic
+        features that make every conversation special.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-heartbeat"></i>
+      </div>
+      <h3 class="feature-title">Relationship Tracking</h3>
+      <p class="feature-description">
+        Celebrate milestones with anniversary reminders, mood tracking, and a
+        beautiful timeline of your journey together.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-images"></i>
+      </div>
+      <h3 class="feature-title">Memory Gallery</h3>
+      <p class="feature-description">
+        Store and organize your precious moments with a dedicated media gallery.
+        Every photo, video, and voice note safely preserved.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-palette"></i>
+      </div>
+      <h3 class="feature-title">Beautiful Themes</h3>
+      <p class="feature-description">
+        Customize your space with romantic themes, wallpapers, and personal
+        touches that reflect your unique love story.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-mobile-alt"></i>
+      </div>
+      <h3 class="feature-title">Always Accessible</h3>
+      <p class="feature-description">
+        Responsive design works perfectly on all devices. Stay connected whether
+        you're on your phone, tablet, or computer.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+  <h2 class="section-title">Love Stories</h2>
+  <p class="section-subtitle">
+    See what couples are saying about their LunaLink experience
+  </p>
+
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <p class="testimonial-text">
+        "LunaLink brought back the spark in our long-distance relationship. The
+        private space and beautiful interface make us feel connected no matter
+        the distance."
+      </p>
+      <div class="testimonial-author">
+        <div class="author-avatar">S&A</div>
+        <div class="author-info">
+          <h4>Sarah & Alex</h4>
+          <p>Together for 2 years</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="testimonial-card">
+      <p class="testimonial-text">
+        "The anniversary reminders and memory timeline are our favorite
+        features. It's like having a digital scrapbook of our love story!"
+      </p>
+      <div class="testimonial-author">
+        <div class="author-avatar">M&J</div>
+        <div class="author-info">
+          <h4>Maria & James</h4>
+          <p>Newlyweds</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="testimonial-card">
+      <p class="testimonial-text">
+        "Finally, a chat app that understands privacy and romance. The virtual
+        hugs and mood tracking add such personal touches to our daily
+        conversations."
+      </p>
+      <div class="testimonial-author">
+        <div class="author-avatar">R&D</div>
+        <div class="author-info">
+          <h4>Rachel & David</h4>
+          <p>Together for 5 years</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="cta-content">
+    <h2 class="cta-title">Ready to Begin Your Journey?</h2>
+    <p class="cta-description">
+      Join thousands of couples who have found their perfect private space. Your
+      love story deserves a beautiful, secure home.
+    </p>
+    {% if not current_user.is_authenticated %}
+    <a href="{{ url_for('auth.signup') }}" class="hero-btn primary">
+      <i class="fas fa-heart"></i> Create Your Love Space
+    </a>
+    {% else %}
+    <a href="{{ url_for('dashboard.dashboard') }}" class="hero-btn primary">
+      <i class="fas fa-home"></i> Go to Your Dashboard
+    </a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %} {% block extra_js %}
+<script>
+  // Add scroll animations
+  document.addEventListener("DOMContentLoaded", function () {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -50px 0px",
+    };
+
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.style.animation = "fadeInUp 0.8s ease forwards";
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Observe feature cards and testimonials
+    document
+      .querySelectorAll(".feature-card, .testimonial-card")
+      .forEach((card) => {
+        card.style.opacity = "0";
+        observer.observe(card);
+      });
+  });
+</script>
+{% endblock %}
