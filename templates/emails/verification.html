@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Your LunaLink Account</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+        font-family: "Poppins", sans-serif;
+        color: #333;
+        text-align: center;
+        padding: 40px 20px;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 40px 30px;
+        box-shadow: 0 0 30px rgba(255, 182, 193, 0.5);
+        animation: float 3s ease-in-out infinite;
+      }
+
+      .header {
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        font-family: "Great Vibes", cursive;
+        font-size: 2.5rem;
+        color: #ff4b6e;
+        margin-bottom: 10px;
+      }
+
+      .logo i {
+        margin-right: 10px;
+      }
+
+      .title {
+        font-size: 1.8rem;
+        color: #ff4b6e;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+
+      .otp-container {
+        background: linear-gradient(135deg, #ff4b6e 0%, #8a2be2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin: 30px 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .otp-container::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 70%
+        );
+        animation: rotate 10s linear infinite;
+      }
+
+      .otp-label {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        opacity: 0.9;
+      }
+
+      .otp-code {
+        font-size: 3rem;
+        font-weight: 700;
+        letter-spacing: 8px;
+        margin: 15px 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        animation: pulse 2s infinite;
+      }
+
+      .verify-button {
+        display: inline-block;
+        background: #ff4b6e;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 75, 110, 0.4);
+      }
+
+      .verify-button:hover {
+        background: #8a2be2;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4);
+      }
+
+      .info-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 25px 0;
+        border-left: 4px solid #ff4b6e;
+      }
+
+      .info-title {
+        font-weight: 600;
+        color: #ff4b6e;
+        margin-bottom: 10px;
+      }
+
+      .info-text {
+        color: #666;
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        color: #888;
+        font-size: 0.9rem;
+      }
+
+      .footer p {
+        margin: 5px 0;
+      }
+
+      .heart-divider {
+        font-size: 1.5rem;
+        color: #ff4b6e;
+        margin: 20px 0;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        50% {
+          transform: scale(1.05);
+          text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .floating-hearts {
+        position: relative;
+        height: 50px;
+        margin: 20px 0;
+      }
+
+      .floating-hearts .heart {
+        position: absolute;
+        font-size: 20px;
+        opacity: 0;
+        animation: floatHearts 4s ease-in infinite;
+      }
+
+      .floating-hearts .heart:nth-child(1) {
+        left: 10%;
+        animation-delay: 0s;
+        color: #ff4b6e;
+      }
+      .floating-hearts .heart:nth-child(2) {
+        left: 30%;
+        animation-delay: 1s;
+        color: #ff8fab;
+      }
+      .floating-hearts .heart:nth-child(3) {
+        left: 50%;
+        animation-delay: 2s;
+        color: #8a2be2;
+      }
+      .floating-hearts .heart:nth-child(4) {
+        left: 70%;
+        animation-delay: 3s;
+        color: #ff4b6e;
+      }
+      .floating-hearts .heart:nth-child(5) {
+        left: 90%;
+        animation-delay: 4s;
+        color: #ff8fab;
+      }
+
+      @keyframes floatHearts {
+        0% {
+          transform: translateY(0) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .email-container {
+          padding: 30px 20px;
+          margin: 20px;
+        }
+
+        .otp-code {
+          font-size: 2.5rem;
+          letter-spacing: 6px;
+        }
+
+        .verify-button {
+          padding: 12px 25px;
+          font-size: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <div class="logo"><i class="fas fa-moon"></i>LunaLink</div>
+        <h1 class="title">Verify Your Love Link 💌</h1>
+        <p class="subtitle">
+          Hello {{ name }}, welcome to your private love space! Verify your
+          email to begin your journey.
+        </p>
+      </div>
+
+      <div class="floating-hearts">
+        <div class="heart">💖</div>
+        <div class="heart">💕</div>
+        <div class="heart">💞</div>
+        <div class="heart">💗</div>
+        <div class="heart">💝</div>
+      </div>
+
+      <div class="otp-container">
+        <div class="otp-label">
+          Your One-Time Password (OTP) for verification is:
+        </div>
+        <div class="otp-code">{{ otp }}</div>
+        <div class="otp-label">This code expires in 5 minutes</div>
+      </div>
+
+      <a href="{{ verify_url }}" class="verify-button">
+        <i class="fas fa-heart"></i> Verify My Love Link 💞
+      </a>
+
+      <div class="heart-divider">💖 💕 💞 💗 💝</div>
+
+      <div class="info-box">
+        <div class="info-title">📧 Can't find the email?</div>
+        <p class="info-text">
+          Check your spam folder or click the button above to verify directly.
+          If you didn't request this verification, please ignore this email.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>With love,</p>
+        <p><strong>The LunaLink Team</strong></p>
+        <p>Connecting hearts, one link at a time 🌙💫</p>
+        <p style="margin-top: 15px; font-size: 0.8rem; color: #aaa">
+          This is an automated message. Please do not reply to this email.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

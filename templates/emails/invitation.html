@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Join LunaLink - Your Partner is Waiting!</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+        font-family: "Poppins", sans-serif;
+        color: #333;
+        text-align: center;
+        padding: 40px 20px;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 40px 30px;
+        box-shadow: 0 0 30px rgba(255, 182, 193, 0.5);
+      }
+
+      .logo {
+        font-family: "Great Vibes", cursive;
+        font-size: 2.5rem;
+        color: #ff4b6e;
+        margin-bottom: 10px;
+      }
+
+      .title {
+        font-size: 1.8rem;
+        color: #ff4b6e;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+
+      .invitation-card {
+        background: linear-gradient(135deg, #ff4b6e 0%, #8a2be2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin: 30px 0;
+      }
+
+      .inviter-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .inviter-email {
+        opacity: 0.9;
+        margin-bottom: 20px;
+      }
+
+      .join-button {
+        display: inline-block;
+        background: white;
+        color: #ff4b6e;
+        padding: 15px 30px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+      }
+
+      .join-button:hover {
+        background: #ff4b6e;
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 30px 0;
+      }
+
+      .feature {
+        text-align: center;
+        padding: 1rem;
+      }
+
+      .feature i {
+        font-size: 2rem;
+        color: #ff4b6e;
+        margin-bottom: 0.5rem;
+      }
+
+      .feature span {
+        font-size: 0.9rem;
+        color: #666;
+      }
+
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        color: #888;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="logo"><i class="fas fa-moon"></i>LunaLink</div>
+
+      <h1 class="title">You're Invited to LunaLink! 💌</h1>
+      <p class="subtitle">
+        {{ inviter_name }} wants to connect with you on their private love space
+      </p>
+
+      <div class="invitation-card">
+        <div class="inviter-name">{{ inviter_name }}</div>
+        <div class="inviter-email">{{ inviter_email }}</div>
+        <p>is waiting to start your beautiful journey together on LunaLink</p>
+      </div>
+
+      <a href="{{ signup_url }}" class="join-button">
+        <i class="fas fa-heart"></i> Accept Invitation & Join
+      </a>
+
+      <div class="features">
+        <div class="feature">
+          <i class="fas fa-shield-alt"></i>
+          <span>Private & Secure</span>
+        </div>
+        <div class="feature">
+          <i class="fas fa-comments"></i>
+          <span>Real-time Chat</span>
+        </div>
+        <div class="feature">
+          <i class="fas fa-images"></i>
+          <span>Share Memories</span>
+        </div>
+        <div class="feature">
+          <i class="fas fa-heartbeat"></i>
+          <span>Track Your Love</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>With love,</p>
+        <p><strong>The LunaLink Team</strong></p>
+        <p>Connecting hearts, one link at a time 🌙💫</p>
+        <p style="margin-top: 15px; font-size: 0.8rem; color: #aaa">
+          This invitation was sent by {{ inviter_name }} ({{ inviter_email }}).
+          If you didn't expect this invitation, please ignore this email.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
